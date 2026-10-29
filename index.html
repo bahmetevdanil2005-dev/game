@@ -43,7 +43,7 @@ if(/yandex/.test(location.hostname)){const s=document.createElement('script');s.
  s.onload=()=>YaGames.init().then(y=>{ysdk=y;try{y.features.LoadingAPI.ready()}catch(e){}try{y.on('game_api_pause',()=>{if(state==='play')pauseG()})}catch(e){}}).catch(()=>{});
  document.head.appendChild(s)}
 const rd=new T.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
-rd.setPixelRatio(Math.min(devicePixelRatio||1,2));rd.shadowMap.enabled=true;document.body.prepend(rd.domElement);
+rd.setPixelRatio(Math.min(devicePixelRatio||1,2));rd.outputEncoding=T.sRGBEncoding;rd.shadowMap.enabled=true;document.body.prepend(rd.domElement);
 const sc=new T.Scene();sc.background=new T.Color(0x9fd8f2);sc.fog=new T.Fog(0x9fd8f2,90,520);
 const cam=new T.PerspectiveCamera(55,1,.1,700);
 sc.add(new T.HemisphereLight(0xffffff,0x4a7a40,.95));
@@ -153,17 +153,18 @@ const foam=new T.Mesh(new T.RingGeometry(R*.95,R*1.35,28),new T.MeshBasicMateria
 const foam2=new T.Mesh(new T.RingGeometry(.55,1,24),foam.material);foam2.rotation.x=-Math.PI/2;sc.add(foam2);
 const pivot=new T.Object3D();const body=new T.Group();pivot.add(body);pivot.scale.setScalar(0.72);sc.add(pivot);
 const MODEL_SCALE=1.0,MODEL_ROT_Y=Math.PI,MODEL_Y_OFFSET=0;
-const butt=new T.Object3D();butt.position.set(0,.5,-1.0);body.add(butt);
+const butt=new T.Object3D();
 const loader=new T.GLTFLoader();
-loader.load('moto_moto/scene.gltf',(gltf)=>{const model=gltf.scene;model.traverse(child=>{if(child.isMesh){child.castShadow=true;child.receiveShadow=true}});
- model.scale.setScalar(MODEL_SCALE);model.rotation.y=MODEL_ROT_Y;const box=new T.Box3().setFromObject(model),center=box.getCenter(new T.Vector3());
- model.position.x=-center.x;model.position.z=-center.z;model.position.y=-box.min.y+MODEL_Y_OFFSET;body.add(model);
-},undefined,(err)=>{console.error('ОШИБКА ЗАГРУЗКИ МОДЕЛИ! Проверь путь и локальный сервер:',err)});
-body.position.set(0,.3,.4);const V_UP=0,V_THR=.24;
+loader.load('moto_moto/scene.gltf',(gltf)=>{const model=gltf.scene;model.scale.setScalar(MODEL_SCALE);model.rotation.y=MODEL_ROT_Y;const box=new T.Box3().setFromObject(model),center=box.getCenter(new T.Vector3());
+ model.position.x=-center.x;model.position.z=-center.z;model.position.y=-box.min.y+MODEL_Y_OFFSET;
+ model.traverse(child=>{if(child.isMesh){child.castShadow=true;child.receiveShadow=true;const mats=Array.isArray(child.material)?child.material:[child.material];mats.forEach(mat=>{if(mat){if(mat.map)mat.map.encoding=T.sRGBEncoding;if(mat.emissive)mat.emissive.set(0x24170f);mat.needsUpdate=true}})}});
+ body.add(model);butt.position.set(0,.18,1.08);model.add(butt);
+},undefined,(err)=>{console.error('ОШИБКА ЗАГРУЗКИ МОДЕЛИ! Проверь путь и текстуры:',err)});
+body.position.set(0,-.08,0);const V_UP=0,V_THR=.12;
 const ptx=ctex(64,64,g=>{const gr=g.createRadialGradient(32,32,2,32,32,30);gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(0,0,64,64)});
 const PS=[];for(let i=0;i<90;i++){const s=new T.Sprite(new T.SpriteMaterial({map:ptx,transparent:true,depthWrite:false}));s.visible=false;sc.add(s);PS.push({s,l:0,m:1,v:new T.Vector3()})}
 let pi=0;const _q=new T.Quaternion(),_j=new T.Vector3();
-function jet(){pivot.updateWorldMatrix(true,false);pivot.getWorldQuaternion(_q);_j.set(0,0,-1).applyQuaternion(_q);_j.y=0;return _j.normalize()}
+function jet(){pivot.updateWorldMatrix(true,false);pivot.getWorldQuaternion(_q);_j.set(0,0,1).applyQuaternion(_q);_j.y=0;return _j.normalize()}
 function spawn(){const p=PS[pi=(pi+1)%PS.length],j=jet();butt.getWorldPosition(p.s.position);p.s.position.y=Math.max(p.s.position.y,.3);const r=()=>(Math.random()-.5)*1.2;
  p.v.set(j.x*(3+Math.random()*2.5)+rf.vx*.4+r(),.4+Math.random()*.8,j.z*(3+Math.random()*2.5)+rf.vz*.4+r());p.l=p.m=.55+Math.random()*.5;p.s.visible=true}
 function partUpd(dt){for(const p of PS){if(p.l<=0)continue;p.l-=dt;if(p.l<=0){p.s.visible=false;continue}const k=1-p.l/p.m;p.s.position.addScaledVector(p.v,dt);p.v.multiplyScalar(Math.max(0,1-2*dt));p.s.scale.setScalar(.35+k*1.5);p.s.material.opacity=.7*(1-k);p.s.material.color.setHSL(.22-.1*k,.55,.45+.3*k)}}
@@ -173,7 +174,7 @@ function audio(){if(ac){if(ac.state==='suspended')ac.resume();return}try{ac=new(
 const rf={x:0,z:0,vx:0,vz:0};
 let abys=false,rfOut=false,rfy=0,rvy=0,ang=0,av=0,held=0,gasPrev=0,idx=4,cpI=0,beach=0,time=0,deadT=0,shake=0,puff=0,thr=0,emit=0,acc2=0,snap=1,bobT=0,sinkAmt=0,headShake=0;
 const kb={l:0,r:0,g:0},tb={l:0,r:0,g:0};
-function setPivot(){pivot.position.set(rf.x+Math.cos(ang)*HP,.5-sinkAmt+Math.sin(bobT*2.3)*.04+rfy,rf.z+Math.sin(ang)*HP);pivot.rotation.set(0,Math.atan2(-Math.cos(ang),-Math.sin(ang)),0)}
+function setPivot(){const hippoRadius=R+.42;pivot.position.set(rf.x+Math.cos(ang)*hippoRadius,.18-sinkAmt+Math.sin(bobT*2.3)*.025+rfy,rf.z+Math.sin(ang)*hippoRadius);pivot.rotation.set(0,Math.atan2(-Math.cos(ang),-Math.sin(ang)),0)}
 function toast(t){const e=$('toast');e.textContent=t;e.style.opacity=1;clearTimeout(toast.h);toast.h=setTimeout(()=>e.style.opacity=0,1400)}
 function die(kind){if(state!=='play')return;setS('dead');deadT=0;abys=kind==='abyss';$('dead').querySelector('h1').textContent=abys?'Ааа-а-а!':'Бульк!';shake=1}
 function step(dt){
@@ -190,7 +191,7 @@ function step(dt){
  rf.x+=rf.vx*dt;rf.z+=rf.vz*dt;
  let best=1e9,bi=idx;for(let j=Math.max(0,idx-20);j<=Math.min(N,idx+20);j++){const dd=Math.hypot(C[j].x-rf.x,C[j].z-rf.z);if(dd<best){best=dd;bi=j}}idx=bi;
  for(const o of KIN)o.upd(dt);
- const hx=rf.x+Math.cos(ang)*(HP+.45),hz=rf.z+Math.sin(ang)*(HP+.45);
+ const hx=rf.x+Math.cos(ang)*(R+.42),hz=rf.z+Math.sin(ang)*(R+.42);
  for(const o of OB){if(Math.abs(o.ax-rf.x)>9||Math.abs(o.az-rf.z)>9)continue;
   if(o.d&&Math.hypot(hx-o.ax,hz-o.az)<.6+o.r){die('spike');return}
   const px=o.bx-o.ax,pz=o.bz-o.az,L=px*px+pz*pz;let u=L?((rf.x-o.ax)*px+(rf.z-o.az)*pz)/L:0;u=u<0?0:u>1?1:u;
@@ -239,7 +240,7 @@ function visual(dt){
  setPivot();
  raftG.position.set(rf.x,.08+Math.sin(bobT*2)*.03-sinkAmt+rfy,rf.z);
  raftG.rotation.set(Math.sin(bobT*1.6)*.03+(Math.random()-.5)*shake*.1,0,Math.cos(bobT*1.3)*.03+(Math.random()-.5)*shake*.1+(state==='dead'?sinkAmt*.4:0));
- if(state==='menu'||state==='win'){pivot.position.y=.5-sinkAmt+(state==='win'?Math.abs(Math.sin(bobT*6))*.6:0);if(state==='win')pivot.rotation.y+=dt*4}
+ if(state==='menu'||state==='win'){pivot.position.y=.18-sinkAmt+(state==='win'?Math.abs(Math.sin(bobT*6))*.6:0);if(state==='win')pivot.rotation.y+=dt*4}
  body.rotation.x+=((thr?V_THR:V_UP)-body.rotation.x)*Math.min(1,dt*8);
  headShake+=((thr?1:0)-headShake)*Math.min(1,dt*10);
  if(headShake>.01){body.rotation.z=Math.sin(bobT*55)*.05*headShake;body.rotation.y=Math.cos(bobT*47)*.05*headShake;body.scale.y=1+Math.sin(bobT*40)*.02*headShake}
