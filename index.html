@@ -63,7 +63,7 @@ function strip(defs,mat){const pos=[],uv=[],ix=[],k=defs.length;
  for(let i=0;i<N;i++)for(let j=0;j<k-1;j++){const a=i*k+j,b=a+1,c=a+k,d=c+1;ix.push(a,b,c,b,d,c)}
  const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();
  const m=new T.Mesh(g,mat);m.receiveShadow=true;sc.add(m);return m}
-const wtex=ctex(128,128,(g,w,h)=>{g.fillStyle='#fff';g.fillRect(0,0,w,h);for(let i=0;i<40;i++){g.strokeStyle=\`rgba(120,190,230,\${.2+rnd()*.3})\`;g.lineWidth=2;const x=rnd()*w,y=rnd()*h;g.beginPath();g.moveTo(x,y);g.quadraticCurveTo(x+12,y-4,x+26,y);g.stroke()}});
+const wtex=ctex(128,128,(g,w,h)=>{g.fillStyle='#fff';g.fillRect(0,0,w,h);for(let i=0;i<40;i++){g.strokeStyle=`rgba(120,190,230,${.2+rnd()*.3})`;g.lineWidth=2;const x=rnd()*w,y=rnd()*h;g.beginPath();g.moveTo(x,y);g.quadraticCurveTo(x+12,y-4,x+26,y);g.stroke()}});
 const wm=new T.MeshLambertMaterial({color:0x3aa6e6,map:wtex,transparent:true,opacity:.93,side:T.DoubleSide});
 strip([[i=>-HW[i]-.6,.06],[i=>HW[i]+.6,.06]],wm);
 const slab=lam(0x6a5340,1);
@@ -145,7 +145,7 @@ CPI.forEach((i,k)=>{if(!k)return;const n=NM[i],h=HW[i],a0=-Math.atan2(n.z,n.x),f
  const bar=new T.Mesh(new T.BoxGeometry(2*h+3,1,.4),new T.MeshLambertMaterial({map:ch}));bar.position.set(C[i].x,5,C[i].z);bar.rotation.y=-Math.atan2(n.z,n.x);sc.add(bar);
  for(const s of[-1,1]){const p=new T.Mesh(new T.CylinderGeometry(.3,.3,6.4,8),lam(0xffffff));p.position.set(C[i].x+n.x*s*(h+.3),1.8,C[i].z+n.z*s*(h+.3));sc.add(p)}}
 const raftG=new T.Group();sc.add(raftG);
-const wood=ctex(64,64,(g,w,h)=>{g.fillStyle='#b97a3d';g.fillRect(0,0,w,h);for(let i=0;i<60;i++){g.fillStyle=\`rgba(\${70+rnd()*50|0},40,10,.25)\`;g.fillRect(0,rnd()*h,w,1+rnd()*2)}});
+const wood=ctex(64,64,(g,w,h)=>{g.fillStyle='#b97a3d';g.fillRect(0,0,w,h);for(let i=0;i<60;i++){g.fillStyle=`rgba(${70+rnd()*50|0},40,10,.25)`;g.fillRect(0,rnd()*h,w,1+rnd()*2)}});
 const wmat=new T.MeshStandardMaterial({map:wood,roughness:.85});
 for(let z=-1.05;z<=1.06;z+=.35){const len=2*Math.sqrt(R*R-z*z),b=new T.Mesh(new T.BoxGeometry(len,.3,.32),wmat);b.position.set(0,0,z);b.castShadow=b.receiveShadow=true;raftG.add(b)}
 const rim=new T.Mesh(new T.TorusGeometry(R,.07,6,28),new T.MeshStandardMaterial({color:0x6b4a2a,roughness:.9}));rim.rotation.x=Math.PI/2;rim.position.y=.14;raftG.add(rim);
