@@ -144,14 +144,14 @@ CPI.forEach((i,k)=>{if(!k)return;const n=NM[i],h=HW[i],a0=-Math.atan2(n.z,n.x),f
 {const i=FIN,n=NM[i],h=HW[i],ch=ctex(64,16,(g)=>{for(let x=0;x<8;x++)for(let y=0;y<2;y++){g.fillStyle=(x+y)%2?'#111':'#fff';g.fillRect(x*8,y*8,8,8)}});ch.repeat.set(6,1);
  const bar=new T.Mesh(new T.BoxGeometry(2*h+3,1,.4),new T.MeshLambertMaterial({map:ch}));bar.position.set(C[i].x,5,C[i].z);bar.rotation.y=-Math.atan2(n.z,n.x);sc.add(bar);
  for(const s of[-1,1]){const p=new T.Mesh(new T.CylinderGeometry(.3,.3,6.4,8),lam(0xffffff));p.position.set(C[i].x+n.x*s*(h+.3),1.8,C[i].z+n.z*s*(h+.3));sc.add(p)}}
-const raftG=new T.Group();sc.add(raftG);
+const raftG=new T.Group();raftG.scale.setScalar(2);sc.add(raftG);
 const wood=ctex(64,64,(g,w,h)=>{g.fillStyle='#b97a3d';g.fillRect(0,0,w,h);for(let i=0;i<60;i++){g.fillStyle=`rgba(${70+rnd()*50|0},40,10,.25)`;g.fillRect(0,rnd()*h,w,1+rnd()*2)}});
 const wmat=new T.MeshStandardMaterial({map:wood,roughness:.85});
 for(let z=-1.05;z<=1.06;z+=.35){const len=2*Math.sqrt(R*R-z*z),b=new T.Mesh(new T.BoxGeometry(len,.3,.32),wmat);b.position.set(0,0,z);b.castShadow=b.receiveShadow=true;raftG.add(b)}
 const rim=new T.Mesh(new T.TorusGeometry(R,.07,6,28),new T.MeshStandardMaterial({color:0x6b4a2a,roughness:.9}));rim.rotation.x=Math.PI/2;rim.position.y=.14;raftG.add(rim);
 const foam=new T.Mesh(new T.RingGeometry(R*.95,R*1.35,28),new T.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.5,depthWrite:false}));foam.rotation.x=-Math.PI/2;foam.position.y=.1;sc.add(foam);
 const foam2=new T.Mesh(new T.RingGeometry(.55,1,24),foam.material);foam2.rotation.x=-Math.PI/2;sc.add(foam2);
-const pivot=new T.Object3D();const body=new T.Group();pivot.add(body);pivot.scale.setScalar(0.72);sc.add(pivot);
+const pivot=new T.Object3D();const body=new T.Group();pivot.add(body);pivot.scale.setScalar(1.44);sc.add(pivot);
 const MODEL_SCALE=1.0,MODEL_ROT_Y=Math.PI,MODEL_Y_OFFSET=0;
 const butt=new T.Object3D();
 const loader=new T.GLTFLoader();
@@ -174,7 +174,7 @@ function audio(){if(ac){if(ac.state==='suspended')ac.resume();return}try{ac=new(
 const rf={x:0,z:0,vx:0,vz:0};
 let abys=false,rfOut=false,rfy=0,rvy=0,ang=0,av=0,held=0,gasPrev=0,idx=4,cpI=0,beach=0,time=0,deadT=0,shake=0,puff=0,thr=0,emit=0,acc2=0,snap=1,bobT=0,sinkAmt=0,headShake=0;
 const kb={l:0,r:0,g:0},tb={l:0,r:0,g:0};
-function setPivot(){const hippoRadius=R+.42;pivot.position.set(rf.x+Math.cos(ang)*hippoRadius,.18-sinkAmt+Math.sin(bobT*2.3)*.025+rfy,rf.z+Math.sin(ang)*hippoRadius);pivot.rotation.set(0,Math.atan2(-Math.cos(ang),-Math.sin(ang)),0)}
+function setPivot(){const hippoRadius=R*2+.12;pivot.position.set(rf.x+Math.cos(ang)*hippoRadius,-.34-sinkAmt+Math.sin(bobT*2.3)*.018+rfy,rf.z+Math.sin(ang)*hippoRadius);pivot.rotation.set(0,Math.atan2(-Math.cos(ang),-Math.sin(ang)),0)}
 function toast(t){const e=$('toast');e.textContent=t;e.style.opacity=1;clearTimeout(toast.h);toast.h=setTimeout(()=>e.style.opacity=0,1400)}
 function die(kind){if(state!=='play')return;setS('dead');deadT=0;abys=kind==='abyss';$('dead').querySelector('h1').textContent=abys?'Ааа-а-а!':'Бульк!';shake=1}
 function step(dt){
@@ -191,7 +191,7 @@ function step(dt){
  rf.x+=rf.vx*dt;rf.z+=rf.vz*dt;
  let best=1e9,bi=idx;for(let j=Math.max(0,idx-20);j<=Math.min(N,idx+20);j++){const dd=Math.hypot(C[j].x-rf.x,C[j].z-rf.z);if(dd<best){best=dd;bi=j}}idx=bi;
  for(const o of KIN)o.upd(dt);
- const hx=rf.x+Math.cos(ang)*(R+.42),hz=rf.z+Math.sin(ang)*(R+.42);
+ const hx=rf.x+Math.cos(ang)*(R*2+.12),hz=rf.z+Math.sin(ang)*(R*2+.12);
  for(const o of OB){if(Math.abs(o.ax-rf.x)>9||Math.abs(o.az-rf.z)>9)continue;
   if(o.d&&Math.hypot(hx-o.ax,hz-o.az)<.6+o.r){die('spike');return}
   const px=o.bx-o.ax,pz=o.bz-o.az,L=px*px+pz*pz;let u=L?((rf.x-o.ax)*px+(rf.z-o.az)*pz)/L:0;u=u<0?0:u>1?1:u;
@@ -239,12 +239,10 @@ function visual(dt){
  sinkAmt=state==='dead'?Math.min(deadT,1.4)*.5:0;
  setPivot();
  raftG.position.set(rf.x,.08+Math.sin(bobT*2)*.03-sinkAmt+rfy,rf.z);
- raftG.rotation.set(Math.sin(bobT*1.6)*.03+(Math.random()-.5)*shake*.1,0,Math.cos(bobT*1.3)*.03+(Math.random()-.5)*shake*.1+(state==='dead'?sinkAmt*.4:0));
+ raftG.rotation.set(Math.sin(bobT*1.6)*.012,0,Math.cos(bobT*1.3)*.012+(state==='dead'?sinkAmt*.4:0));
  if(state==='menu'||state==='win'){pivot.position.y=.18-sinkAmt+(state==='win'?Math.abs(Math.sin(bobT*6))*.6:0);if(state==='win')pivot.rotation.y+=dt*4}
  body.rotation.x+=((thr?V_THR:V_UP)-body.rotation.x)*Math.min(1,dt*8);
- headShake+=((thr?1:0)-headShake)*Math.min(1,dt*10);
- if(headShake>.01){body.rotation.z=Math.sin(bobT*55)*.05*headShake;body.rotation.y=Math.cos(bobT*47)*.05*headShake;body.scale.y=1+Math.sin(bobT*40)*.02*headShake}
- else{body.rotation.z=0;body.rotation.y=0;body.scale.y=1}
+ headShake=0;body.rotation.z=0;body.rotation.y=0;body.scale.y=1
  if(state==='play'&&thr){emit+=dt*45;while(emit>=1){spawn();emit--}}
  partUpd(dv);foam.position.set(rf.x,.1,rf.z);const sp0=Math.hypot(rf.vx,rf.vz);foam.scale.setScalar(1+Math.sin(bobT*4)*.05+sp0*.01);foam.material.opacity=.3+Math.min(.4,sp0*.04);
  for(const o of KIN)o.sync();for(const m of MINES)m.g.position.y=.2+Math.sin(bobT*2+m.g.position.x)*.08;for(const p of POOL)p.m.rotation.z-=dv*(p.k>0?1:-1)*1.5;
