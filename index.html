@@ -152,12 +152,12 @@ const rim=new T.Mesh(new T.TorusGeometry(R,.07,6,28),new T.MeshStandardMaterial(
 const foam=new T.Mesh(new T.RingGeometry(R*.95,R*1.35,28),new T.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.5,depthWrite:false}));foam.rotation.x=-Math.PI/2;foam.position.y=.1;sc.add(foam);
 const foam2=new T.Mesh(new T.RingGeometry(.55,1,24),foam.material);foam2.rotation.x=-Math.PI/2;sc.add(foam2);
 const pivot=new T.Object3D();const body=new T.Group();pivot.add(body);pivot.scale.setScalar(1.44);sc.add(pivot);
-const MODEL_SCALE=1.0,MODEL_ROT_Y=Math.PI,MODEL_Y_OFFSET=0;
+const MODEL_SCALE=1.0,MODEL_ROT_Y=Math.PI,MODEL_Y_OFFSET=-.04;
 const butt=new T.Object3D();
 const loader=new T.GLTFLoader();
 loader.load('moto_moto/scene.gltf',(gltf)=>{const model=gltf.scene;model.scale.setScalar(MODEL_SCALE);model.rotation.y=MODEL_ROT_Y;const box=new T.Box3().setFromObject(model),center=box.getCenter(new T.Vector3());
  model.position.x=-center.x;model.position.z=-center.z;model.position.y=-box.min.y+MODEL_Y_OFFSET;
- model.traverse(child=>{if(child.isMesh){child.castShadow=true;child.receiveShadow=true;const mats=Array.isArray(child.material)?child.material:[child.material];mats.forEach(mat=>{if(mat){if(mat.map)mat.map.encoding=T.sRGBEncoding;if(mat.emissive)mat.emissive.set(0x24170f);mat.needsUpdate=true}})}});
+ model.traverse(child=>{if(child.isMesh){child.castShadow=true;child.receiveShadow=true;const mats=Array.isArray(child.material)?child.material:[child.material];mats.forEach(mat=>{if(mat){if(mat.map){mat.map.encoding=T.sRGBEncoding;mat.map.needsUpdate=true}if(mat.color)mat.color.set(0xffffff);if(mat.emissive)mat.emissive.set(0x000000);mat.needsUpdate=true}})}});
  body.add(model);butt.position.set(0,.18,1.08);model.add(butt);
 },undefined,(err)=>{console.error('ОШИБКА ЗАГРУЗКИ МОДЕЛИ! Проверь путь и текстуры:',err)});
 body.position.set(0,-.08,0);const V_UP=0,V_THR=.12;
@@ -174,7 +174,7 @@ function audio(){if(ac){if(ac.state==='suspended')ac.resume();return}try{ac=new(
 const rf={x:0,z:0,vx:0,vz:0};
 let abys=false,rfOut=false,rfy=0,rvy=0,ang=0,av=0,held=0,gasPrev=0,idx=4,cpI=0,beach=0,time=0,deadT=0,shake=0,puff=0,thr=0,emit=0,acc2=0,snap=1,bobT=0,sinkAmt=0,headShake=0;
 const kb={l:0,r:0,g:0},tb={l:0,r:0,g:0};
-function setPivot(){const hippoRadius=R*2+.12;pivot.position.set(rf.x+Math.cos(ang)*hippoRadius,-.34-sinkAmt+Math.sin(bobT*2.3)*.018+rfy,rf.z+Math.sin(ang)*hippoRadius);pivot.rotation.set(0,Math.atan2(-Math.cos(ang),-Math.sin(ang)),0)}
+function setPivot(){const hippoRadius=R*2+.02;pivot.position.set(rf.x+Math.cos(ang)*hippoRadius,-.62-sinkAmt+Math.sin(bobT*2.3)*.012+rfy,rf.z+Math.sin(ang)*hippoRadius);pivot.rotation.set(0,Math.PI/2-ang,0)}
 function toast(t){const e=$('toast');e.textContent=t;e.style.opacity=1;clearTimeout(toast.h);toast.h=setTimeout(()=>e.style.opacity=0,1400)}
 function die(kind){if(state!=='play')return;setS('dead');deadT=0;abys=kind==='abyss';$('dead').querySelector('h1').textContent=abys?'Ааа-а-а!':'Бульк!';shake=1}
 function step(dt){
@@ -191,7 +191,7 @@ function step(dt){
  rf.x+=rf.vx*dt;rf.z+=rf.vz*dt;
  let best=1e9,bi=idx;for(let j=Math.max(0,idx-20);j<=Math.min(N,idx+20);j++){const dd=Math.hypot(C[j].x-rf.x,C[j].z-rf.z);if(dd<best){best=dd;bi=j}}idx=bi;
  for(const o of KIN)o.upd(dt);
- const hx=rf.x+Math.cos(ang)*(R*2+.12),hz=rf.z+Math.sin(ang)*(R*2+.12);
+ const hx=rf.x+Math.cos(ang)*(R*2+.02),hz=rf.z+Math.sin(ang)*(R*2+.02);
  for(const o of OB){if(Math.abs(o.ax-rf.x)>9||Math.abs(o.az-rf.z)>9)continue;
   if(o.d&&Math.hypot(hx-o.ax,hz-o.az)<.6+o.r){die('spike');return}
   const px=o.bx-o.ax,pz=o.bz-o.az,L=px*px+pz*pz;let u=L?((rf.x-o.ax)*px+(rf.z-o.az)*pz)/L:0;u=u<0?0:u>1?1:u;
