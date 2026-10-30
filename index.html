@@ -227,13 +227,13 @@ let emitter=butt,mixer=null,hippoAction=null,hipsB=null,headB=null,animSpd=1;con
   for(const s of[-1,1]){const ew=new T.Group();ew.position.set(s*.17,.63,.36);ew.add(new T.Mesh(new T.SphereGeometry(.1,14,10),em));
    const ep=new T.Group();ep.position.set(s*.17,.64,.44);ep.add(new T.Mesh(new T.SphereGeometry(.055,10,8),pm));headB.add(ew,ep);gEyes.push({ew,ep})}
   emitter=new T.Object3D();emitter.position.set(.042,.135,-.434);hipsB.add(emitter);   // источник пука — на крупе, едет вместе с анимацией
+  root.position.set(0,-.55,-.45);pivot.add(root);root.updateMatrixWorld(true);
   mixer=new T.AnimationMixer(root);if(gl.animations&&gl.animations.length){
    const clip=gl.animations[0];
-   hippoAction=mixer.clipAction(clip);hippoAction.reset();hippoAction.setLoop(T.LoopRepeat,Infinity);hippoAction.enabled=true;hippoAction.paused=false;hippoAction.play();
-   // Сразу применяем нулевой кадр, чтобы скелет не оставался в исходной T-позе.
-   mixer.update(0);
+   hippoAction=mixer.clipAction(clip,root);hippoAction.reset();hippoAction.setLoop(T.LoopRepeat,Infinity);hippoAction.enabled=true;hippoAction.paused=true;hippoAction.timeScale=1;hippoAction.play();
+   mixer.update(0.001);
   }
-  root.position.set(0,-.55,-.45);pivot.add(root);root.updateMatrixWorld(true);mixer&&mixer.update(0);body.visible=false;ld.textContent='Бегемот загружен · анимация: '+(gl.animations?.length||0)+' · '+(gl.animations?.[0]?.duration||0).toFixed(1)+' сек';},
+  body.visible=false;ld.textContent='Бегемот загружен · анимация: '+(gl.animations?.length||0)+' · '+(gl.animations?.[0]?.duration||0).toFixed(1)+' сек';},
  undefined,()=>{ld.textContent='Не удалось загрузить BegemotAnim.glb (положите рядом с index.html, запуск через http-сервер) — запасная модель'})})();
 
 /* ---------- частицы (пул) ---------- */
@@ -339,9 +339,8 @@ function visual(dt){
  puff=Math.max(0,puff-dv*3);
  if(mixer&&hippoAction){
   const farting=state==='play'&&!!thr;
-  // Скорость задаём микшеру целиком: ноль замораживает текущую позу, удержание запускает клип.
-  hippoAction.timeScale=farting?1.6:0;
-  hippoAction.enabled=true;hippoAction.paused=false;
+  // Стандартная схема Three.js: action заморожен до удержания кнопки.
+  hippoAction.enabled=true;hippoAction.paused=!farting;hippoAction.timeScale=1.6;
   mixer.update(dv);
   if(hipsB)hipsB.scale.setScalar(1+puff*.1);
   if(headB){headB.rotation.z+=Math.sin(bobT*47)*.2*hs;headB.rotation.x+=Math.sin(bobT*55)*.1*hs;}
