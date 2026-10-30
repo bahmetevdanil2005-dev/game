@@ -161,7 +161,7 @@ loader.load('BegemotAnim.glb',(gltf)=>{
  const fitScale=2.15/Math.max(rawSize.y,.001);model.scale.setScalar(fitScale);
  const box=new T.Box3().setFromObject(model),center=box.getCenter(new T.Vector3());
  model.position.x=-center.x;model.position.z=-center.z;model.position.y=-box.min.y-.04;
- model.traverse(child=>{if(child.isMesh){child.castShadow=true;child.receiveShadow=true;const mats=Array.isArray(child.material)?child.material:[child.material];mats.forEach(mat=>{if(mat){if(mat.map){mat.map.encoding=T.sRGBEncoding;mat.map.needsUpdate=true}if(mat.color)mat.color.set(0xffffff);if(mat.emissive)mat.emissive.set(0x000000);mat.needsUpdate=true}})}});
+ model.traverse(child=>{if(child.isMesh){child.castShadow=true;child.receiveShadow=true;const mats=Array.isArray(child.material)?child.material:[child.material];mats.forEach(mat=>{if(mat){if(mat.map){mat.map.encoding=T.sRGBEncoding;mat.map.needsUpdate=true}const label=((child.name||'')+' '+(mat.name||'')).toLowerCase();const isEye=/(eye|eyeball|iris|pupil)/.test(label);if(mat.color)mat.color.set(isEye?0x35b9e8:0x9b7057);if(isEye){mat.emissive=new T.Color(0x06364a);mat.emissiveIntensity=.22}else if(mat.emissive){mat.emissive.set(0x000000)}mat.needsUpdate=true}})}});
  body.add(model);
  // Точка выхода привязана к тазу модели, поэтому струя следует за бегемотом без запаздывания
  butt.position.set(0,.28,.82);model.add(butt);
@@ -173,24 +173,27 @@ function jet(){pivot.updateWorldMatrix(true,false);pivot.getWorldQuaternion(_q);
 function spawn(){
  const j=jet(),origin=new T.Vector3();butt.getWorldPosition(origin);
  const group=new T.Group();group.position.copy(origin);group.quaternion.setFromUnitVectors(_up,j);sc.add(group);
- const life=.72+Math.random()*.32;
- for(let n=0;n<3;n++){
-  const phase=Math.random()*Math.PI*2,len=1.15+Math.random()*.65,amp=.12+Math.random()*.12;
-  const pts=[];for(let k=0;k<=9;k++){const t=k/9;const a=phase+t*5.8;pts.push(new T.Vector3(Math.cos(a)*amp*(.25+t),Math.sin(a)*amp*(.25+t),t*len))}
-  const curve=new T.CatmullRomCurve3(pts);
-  const geo=new T.TubeGeometry(curve,22,.055+Math.random()*.035,5,false);
-  const mat=new T.MeshStandardMaterial({color:n===0?0x123d16:(n===1?0x245c18:0x8cff35),roughness:.72,metalness:0,transparent:true,opacity:.94,depthWrite:false});
-  const mesh=new T.Mesh(geo,mat);group.add(mesh);
+ const life=1.25+Math.random()*.35;
+ // Несколько крупных мягких объёмов сливаются в плотное облако, вытянутое от точки выхода
+ for(let n=0;n<9;n++){
+  const radius=.24+Math.random()*.24;
+  const geo=new T.SphereGeometry(1,12,10);
+  const mat=new T.MeshStandardMaterial({color:n%3===0?0x123d16:(n%3===1?0x245c18:0x8cff35),roughness:1,transparent:true,opacity:.92,depthWrite:false});
+  const cloud=new T.Mesh(geo,mat);
+  const along=.05+Math.random()*.7;
+  cloud.position.set((Math.random()-.5)*.48,(Math.random()-.5)*.38,along);
+  cloud.scale.set(radius*1.25,radius*.8,radius*(.9+Math.random()*.7));
+  group.add(cloud);
  }
- FX.push({group,life,max:life,velocity:j.clone().multiplyScalar(2.3+Math.random()*1.6).add(new T.Vector3(rf.vx*.25,.15,rf.vz*.25)),spin:(Math.random()-.5)*2});
- while(FX.length>22){const old=FX.shift();old.group.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose()});sc.remove(old.group)}
+ FX.push({group,life,max:life,velocity:j.clone().multiplyScalar(1.45+Math.random()*.55).add(new T.Vector3(rf.vx*.12,.06,rf.vz*.12)),spin:(Math.random()-.5)*.45});
+ while(FX.length>16){const old=FX.shift();old.group.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose()});sc.remove(old.group)}
 }
 function partUpd(dt){
  for(let i=FX.length-1;i>=0;i--){const p=FX[i];p.life-=dt;
   if(p.life<=0){p.group.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose()});sc.remove(p.group);FX.splice(i,1);continue}
-  const age=1-p.life/p.max;p.group.position.addScaledVector(p.velocity,dt);p.velocity.multiplyScalar(Math.max(0,1-1.4*dt));
-  const swell=.65+Math.sin(Math.min(1,age)*Math.PI)*.62;p.group.scale.set(swell,swell,swell*(.8+age*.8));p.group.rotation.z+=p.spin*dt;
-  p.group.children.forEach(o=>{o.material.opacity=.94*(1-age*.75)});
+  const age=1-p.life/p.max;p.group.position.addScaledVector(p.velocity,dt);p.velocity.multiplyScalar(Math.max(0,1-.9*dt));
+  const swell=.82+Math.sin(Math.min(1,age)*Math.PI)*.38;p.group.scale.set(swell,swell,swell*(.85+age*.7));p.group.rotation.z+=p.spin*dt;
+  p.group.children.forEach(o=>{o.material.opacity=.92*(1-age*.62)});
  }
 }
 let ac,go,osc;
