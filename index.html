@@ -43,12 +43,11 @@ if(/yandex/.test(location.hostname)){const s=document.createElement('script');s.
  s.onload=()=>YaGames.init().then(y=>{ysdk=y;try{y.features.LoadingAPI.ready()}catch(e){}try{y.on('game_api_pause',()=>{if(state==='play')pauseG()})}catch(e){}}).catch(()=>{});
  document.head.appendChild(s)}
 const rd=new T.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
-rd.setPixelRatio(Math.min(devicePixelRatio||1,2));rd.outputEncoding=T.sRGBEncoding;rd.toneMapping=T.ACESFilmicToneMapping;rd.toneMappingExposure=1.28;rd.shadowMap.enabled=true;document.body.prepend(rd.domElement);
-const sc=new T.Scene();sc.background=new T.Color(0x83d9ff);sc.fog=new T.Fog(0x83d9ff,110,620);
+rd.setPixelRatio(Math.min(devicePixelRatio||1,2));rd.outputEncoding=T.sRGBEncoding;rd.shadowMap.enabled=true;document.body.prepend(rd.domElement);
+const sc=new T.Scene();sc.background=new T.Color(0x9fd8f2);sc.fog=new T.Fog(0x9fd8f2,90,520);
 const cam=new T.PerspectiveCamera(55,1,.1,700);
-sc.add(new T.HemisphereLight(0xffffff,0x4a7a40,1.25));
-const fillLight=new T.DirectionalLight(0x9deaff,.42);fillLight.position.set(-8,10,-6);sc.add(fillLight);
-const sun=new T.DirectionalLight(0xfff2d0,1.25);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);
+sc.add(new T.HemisphereLight(0xffffff,0x4a7a40,.95));
+const sun=new T.DirectionalLight(0xfff2d0,.9);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);
 const sh=sun.shadow.camera;sh.left=sh.bottom=-14;sh.right=sh.top=14;sh.far=70;sc.add(sun,sun.target);
 function resize(){const w=innerWidth,h=innerHeight;rd.setSize(w,h);cam.aspect=w/h;cam.fov=w/h<1?72:55;cam.updateProjectionMatrix()}
 addEventListener('resize',resize);resize();
