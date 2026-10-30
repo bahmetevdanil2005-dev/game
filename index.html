@@ -222,8 +222,8 @@ let emitter=butt,mixer=null,hippoAction=null,hipsB=null,headB=null,animSpd=1;con
   for(const s of[-1,1]){const ew=new T.Group();ew.position.set(s*.17,.63,.36);ew.add(new T.Mesh(new T.SphereGeometry(.1,14,10),em));
    const ep=new T.Group();ep.position.set(s*.17,.64,.44);ep.add(new T.Mesh(new T.SphereGeometry(.055,10,8),pm));headB.add(ew,ep);gEyes.push({ew,ep})}
   emitter=new T.Object3D();emitter.position.set(.042,.135,-.434);hipsB.add(emitter);   // источник пука — на крупе, едет вместе с анимацией
-  mixer=new T.AnimationMixer(root);if(gl.animations&&gl.animations.length){hippoAction=mixer.clipAction(gl.animations[0]);hippoAction.reset();hippoAction.setLoop(T.LoopRepeat,Infinity);hippoAction.enabled=true;hippoAction.paused=false;hippoAction.timeScale=0;hippoAction.play();}
-  root.position.set(0,-.55,-.45);pivot.add(root);body.visible=false;ld.remove()},
+  mixer=new T.AnimationMixer(root);if(gl.animations&&gl.animations.length){hippoAction=mixer.clipAction(gl.animations[0]);hippoAction.reset();hippoAction.setLoop(T.LoopRepeat,Infinity);hippoAction.enabled=true;hippoAction.clampWhenFinished=false;hippoAction.play();mixer.timeScale=0;mixer.update(0);}
+  root.position.set(0,-.55,-.45);pivot.add(root);root.updateMatrixWorld(true);mixer&&mixer.update(0);body.visible=false;ld.textContent='Бегемот загружен · анимация: '+(gl.animations?.length||0)+' · '+(gl.animations?.[0]?.duration||0).toFixed(1)+' сек';},
  undefined,()=>{ld.textContent='Не удалось загрузить BegemotAnim.glb (положите рядом с index.html, запуск через http-сервер) — запасная модель'})})();
 
 /* ---------- частицы (пул) ---------- */
@@ -327,12 +327,14 @@ function visual(dt){
  const es=1+hs*.55;
  for(const e of eyes){e.ew.scale.setScalar(es);e.ep.scale.setScalar(es)}
  puff=Math.max(0,puff-dv*3);
- if(mixer&&hippoAction){   // Не ставим action на паузу: нулевая скорость надёжно замораживает позу, удержание пука запускает клип
+ if(mixer&&hippoAction){
   const farting=state==='play'&&!!thr;
+  // Скорость задаём микшеру целиком: ноль замораживает текущую позу, удержание запускает клип.
+  mixer.timeScale=farting?1.6:0;
   hippoAction.enabled=true;hippoAction.paused=false;
-  hippoAction.timeScale=farting?1.6:0;
   mixer.update(dv);
-  hipsB.scale.setScalar(1+puff*.1);headB.rotation.z+=Math.sin(bobT*47)*.2*hs;headB.rotation.x+=Math.sin(bobT*55)*.1*hs;
+  if(hipsB)hipsB.scale.setScalar(1+puff*.1);
+  if(headB){headB.rotation.z+=Math.sin(bobT*47)*.2*hs;headB.rotation.x+=Math.sin(bobT*55)*.1*hs;}
   for(const e of gEyes){e.ew.scale.setScalar(es);e.ep.scale.setScalar(es)}}
  rump.scale.set(.62+puff*.2,.55+puff*.15,.5+puff*.2);
  if(state==='play'&&thr){emit+=dt*45;while(emit>=1){spawn();emit--}}
