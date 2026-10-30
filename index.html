@@ -24,59 +24,21 @@
   </section>
 
   <main id="main-menu" class="screen menu hidden" aria-label="Главное меню">
-    <header class="topbar">
-      <a class="wordmark" href="#" aria-label="Fragment Games">FRAGMENT<span>.</span>GAMES</a>
-      <div class="topbar-note"><span class="live-dot"></span> ОДНА ОЧЕНЬ НЕОБЫЧНАЯ ИСТОРИЯ</div>
-    </header>
-    <div class="menu-layout">
-      <section class="menu-copy">
-        <div class="eyebrow"><span></span> АБСУРДНОЕ ПРИКЛЮЧЕНИЕ</div>
-        <h1>ПУКАЮЩИЙ<br><em>БЕГЕМОТ</em></h1>
-        <p class="menu-description">Большая река. Большой бегемот.<br>И очень мощный способ передвижения.</p>
-        <div class="menu-actions">
-          <button class="btn btn-primary" id="play-button"><span>НАЧАТЬ ИГРУ</span><b>↗</b></button>
-          <button class="btn btn-secondary" data-panel="howto">КАК ИГРАТЬ <span>＋</span></button>
-          <button class="btn btn-secondary" data-panel="settings">НАСТРОЙКИ <span>＋</span></button>
-        </div>
-        <div class="menu-footer"><span>© 2026 FRAGMENT.GAMES</span><span>СДЕЛАНО С ХАРАКТЕРОМ</span></div>
-      </section>
-      <section class="hero-art" aria-label="Иллюстрация бегемота">
-        <div class="hero-orbit orbit-one"></div><div class="hero-orbit orbit-two"></div>
-        <div class="hero-number">01</div>
-        <div class="water water-back"></div><div class="water water-front"></div>
-        <div class="hippo-scene">
-          <div class="gas-cloud cloud-one"></div><div class="gas-cloud cloud-two"></div>
-          <svg class="hippo-svg" viewBox="0 0 620 470" role="img" aria-label="Мультяшный бегемот на плоту">
-            <defs>
-              <linearGradient id="skin" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#a9d7ce"/><stop offset="1" stop-color="#5c9d99"/></linearGradient>
-              <linearGradient id="belly" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#f1d9c4"/><stop offset="1" stop-color="#c99f91"/></linearGradient>
-              <filter id="shadow"><feGaussianBlur stdDeviation="9"/></filter>
-            </defs>
-            <ellipse cx="320" cy="405" rx="210" ry="25" fill="#071c25" opacity=".4" filter="url(#shadow)"/>
-            <path d="M145 353 Q310 330 490 356 L530 392 Q330 420 100 389Z" fill="#9a633d" stroke="#573b2d" stroke-width="9"/>
-            <path d="M170 357L177 390M245 350L250 400M330 347L335 404M415 350L420 399M480 356L483 394" stroke="#d59b65" stroke-width="8" stroke-linecap="round"/>
-            <ellipse cx="312" cy="275" rx="172" ry="126" fill="url(#skin)" stroke="#315e60" stroke-width="10"/>
-            <ellipse cx="300" cy="325" rx="112" ry="61" fill="url(#belly)" opacity=".95"/>
-            <path d="M170 285 Q120 275 117 326 Q120 367 171 365 Q198 354 196 321Z" fill="#76b3aa" stroke="#315e60" stroke-width="9"/>
-            <path d="M425 275 Q480 265 493 318 Q490 361 443 365 Q416 352 415 319Z" fill="#76b3aa" stroke="#315e60" stroke-width="9"/>
-            <ellipse cx="313" cy="197" rx="137" ry="111" fill="url(#skin)" stroke="#315e60" stroke-width="10"/>
-            <ellipse cx="208" cy="105" rx="37" ry="43" fill="#70aaa2" stroke="#315e60" stroke-width="9"/>
-            <ellipse cx="415" cy="105" rx="37" ry="43" fill="#70aaa2" stroke="#315e60" stroke-width="9"/>
-            <ellipse cx="208" cy="108" rx="18" ry="22" fill="#d9a99d"/><ellipse cx="415" cy="108" rx="18" ry="22" fill="#d9a99d"/>
-            <ellipse cx="313" cy="236" rx="122" ry="71" fill="#d8b8a8" stroke="#315e60" stroke-width="8"/>
-            <ellipse cx="262" cy="223" rx="12" ry="9" fill="#34484a"/><ellipse cx="360" cy="223" rx="12" ry="9" fill="#34484a"/>
-            <ellipse cx="267" cy="166" rx="17" ry="23" fill="#fff"/><ellipse cx="360" cy="166" rx="17" ry="23" fill="#fff"/>
-            <ellipse cx="271" cy="170" rx="8" ry="13" fill="#26383c"/><ellipse cx="364" cy="170" rx="8" ry="13" fill="#26383c"/>
-            <path d="M260 269 Q310 292 365 268" fill="none" stroke="#704e4b" stroke-width="8" stroke-linecap="round"/>
-            <path d="M287 274L279 287M337 276L345 288" stroke="#fff0dd" stroke-width="9" stroke-linecap="round"/>
-            <path d="M237 375 Q223 400 248 403 Q270 404 273 379M366 377 Q361 402 389 402 Q414 400 403 373" fill="#5c9690" stroke="#315e60" stroke-width="8"/>
-          </svg>
-          <div class="gas-label">ПФФФФ—</div>
-        </div>
-        <div class="hero-tag"><span class="tag-dot"></span> ГЛАВНЫЙ ГЕРОЙ</div>
-      </section>
+    <div class="menu-atmosphere" aria-hidden="true"><div class="menu-orbit"></div><div class="menu-orbit orbit-small"></div><div class="menu-glow"></div></div>
+    <div class="menu-shell">
+      <div class="menu-brand">
+        <div class="menu-brand-kicker"><span></span> FRAGMENT.GAMES PRESENTS <span></span></div>
+        <h1 class="game-title">ПУКАЮЩИЙ<br><em>БЕГЕМОТ</em></h1>
+        <div class="game-title-line"><i></i><span>БОЛЬШОЕ ПРИКЛЮЧЕНИЕ НАЧИНАЕТСЯ</span><i></i></div>
+      </div>
+      <nav class="main-actions" aria-label="Главное меню игры">
+        <button class="menu-button menu-button-primary" data-action="single"><span class="menu-button-icon">▶</span><span class="menu-button-label">ОДИНОЧНАЯ ИГРА</span><span class="menu-button-arrow">↗</span></button>
+        <button class="menu-button" data-action="coop"><span class="menu-button-icon">Ⅱ</span><span class="menu-button-label">СОВМЕСТНАЯ ИГРА <small>ОТ 2 ДО 4 ИГРОКОВ</small></span><span class="menu-button-arrow">↗</span></button>
+        <button class="menu-button" data-action="shop"><span class="menu-button-icon">◇</span><span class="menu-button-label">МАГАЗИН</span><span class="menu-button-arrow">↗</span></button>
+        <button class="menu-button" data-action="settings"><span class="menu-button-icon">⚙</span><span class="menu-button-label">НАСТРОЙКИ</span><span class="menu-button-arrow">↗</span></button>
+      </nav>
+      <div class="menu-bottom"><span>© 2026 FRAGMENT.GAMES</span><span class="menu-bottom-center"><b></b> ГОТОВ К ПРИКЛЮЧЕНИЮ?</span><span>VERSION 0.1</span></div>
     </div>
-    <div class="version">V 0.1 · ПЕРВОЕ ЗНАКОМСТВО</div>
   </main>
 
   <section id="game-screen" class="screen game-screen hidden">
