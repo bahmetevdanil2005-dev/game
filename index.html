@@ -26,24 +26,31 @@ p{max-width:460px;line-height:1.4;margin:6px 0}
 <div id="hud"><svg width="26" height="26" viewBox="0 0 24 24" fill="#fff"><path d="M5 3v18h2v-7h10l-2-4 2-4H7V3z"/></svg><div id="bar"><div id="fill"></div></div><span id="tm">0:00</span><button id="pb" aria-label="Пауза"><svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><rect x="5" y="4" width="5" height="16" rx="1.5"/><rect x="14" y="4" width="5" height="16" rx="1.5"/></svg></button></div>
 <div id="toast"></div>
 <div id="touch" class="show"><div class="pair"><div class="tb" id="bl"><svg width="44" height="44" viewBox="0 0 24 24" fill="#fff"><path d="M15 4l-9 8 9 8z"/></svg></div><div class="tb" id="br"><svg width="44" height="44" viewBox="0 0 24 24" fill="#fff"><path d="M9 4l9 8-9 8z"/></svg></div></div><div class="tb big" id="bg"><svg width="64" height="64" viewBox="0 0 24 24" fill="#fff"><path d="M7 17a4 4 0 0 1-.5-7.9A5 5 0 0 1 16 8a4 4 0 0 1 1 7.9V17z"/><path d="M3 20h10v1.6H3z"/></svg></div></div>
-<div class="ov on" id="menu"><h1>ПУК-ПЛОТ</h1><p>Бегемот стоит на краю круглого плота. Пук толкает плот в сторону, куда смотрит бегемот. Двигай бегемота по кругу — меняй направление тяги!</p><p><b>A / D</b> или стрелки — по кругу · <b>Пробел</b> — пук (тап — импульс, удержание — тяга) · <b>R</b> — к чекпоинту · <b>Esc</b> — пауза</p><p>Телефон: две стрелки слева, большая кнопка справа.</p><button class="btn" id="play"><svg width="24" height="24" viewBox="0 0 24 24" fill="#4a2a00"><path d="M7 4l13 8-13 8z"/></svg>Играть</button></div>
+<div class="ov on" id="menu"><h1>ПУК-ПЛОТ</h1><p>Бегемот стоит на краю круглого плота. Пук толкает плот в сторону, куда смотрит бегемот. Двигай бегемота по кругу — меняй направление тяги!</p><p><b>A / D</b> или стрелки — по кругу · <b>Пробел</b> — пук (тап — импульс, удержание — тяга) · <b>R</b> — к чекпоинту · <b>Esc</b> — пауза</p><p>Телефон: две стрелки слева, большая кнопка справа.</p><p id="ld" style="opacity:.8;font-size:14px">Загружаю бегемота…</p><button class="btn" id="play"><svg width="24" height="24" viewBox="0 0 24 24" fill="#4a2a00"><path d="M7 4l13 8-13 8z"/></svg>Играть</button></div>
 <div class="ov" id="pause"><h1>Пауза</h1><button class="btn" id="resume">Продолжить</button><button class="btn" id="restart">Заново</button></div>
 <div class="ov" id="dead" style="background:rgba(60,20,20,.35);pointer-events:none"><h1>Бульк!</h1><p>Возвращаемся к контрольной точке…</p></div>
 <div class="ov" id="win"><h1>Финиш!</h1><p>Время: <b id="wt"></b></p><button class="btn" id="again"><svg width="24" height="24" viewBox="0 0 24 24" fill="#4a2a00"><path d="M12 5V2L7 6l5 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg>Сыграть ещё</button></div>
+
+<!-- Для Яндекс Игр скачайте three.min.js (r128) и положите рядом, заменив src на "three.min.js" -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- Для Яндекс Игр скачайте GLTFLoader.js (three r128, examples/js/loaders) и положите рядом -->
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script>
 "use strict";
 const T=THREE,$=id=>document.getElementById(id);
-const R=1.2,HP=1.2;
+const R=1.2,HP=1.2;            // радиус плота; бегемот стоит впритык на краю
 let state='menu',ysdk=null,tNow=0;
 let sd=7;const rnd=()=>{sd=(sd*16807)%2147483647;return sd/2147483647};
+
+/* ---------- Яндекс SDK (подключается только на домене Яндекса) ---------- */
 function gp(on){try{ysdk&&ysdk.features.GameplayAPI[on?'start':'stop']()}catch(e){}}
 if(/yandex/.test(location.hostname)){const s=document.createElement('script');s.src='/sdk.js';
  s.onload=()=>YaGames.init().then(y=>{ysdk=y;try{y.features.LoadingAPI.ready()}catch(e){}try{y.on('game_api_pause',()=>{if(state==='play')pauseG()})}catch(e){}}).catch(()=>{});
  document.head.appendChild(s)}
+
+/* ---------- сцена ---------- */
 const rd=new T.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
-rd.setPixelRatio(Math.min(devicePixelRatio||1,2));rd.outputEncoding=T.sRGBEncoding;rd.shadowMap.enabled=true;document.body.prepend(rd.domElement);
+rd.setPixelRatio(Math.min(devicePixelRatio||1,2));rd.shadowMap.enabled=true;document.body.prepend(rd.domElement);
 const sc=new T.Scene();sc.background=new T.Color(0x9fd8f2);sc.fog=new T.Fog(0x9fd8f2,90,520);
 const cam=new T.PerspectiveCamera(55,1,.1,700);
 sc.add(new T.HemisphereLight(0xffffff,0x4a7a40,.95));
@@ -53,6 +60,8 @@ function resize(){const w=innerWidth,h=innerHeight;rd.setSize(w,h);cam.aspect=w/
 addEventListener('resize',resize);resize();
 function ctex(w,h,fn){const c=document.createElement('canvas');c.width=w;c.height=h;fn(c.getContext('2d'),w,h);const t=new T.CanvasTexture(c);t.wrapS=t.wrapT=T.RepeatWrapping;return t}
 const lam=(c,f)=>new T.MeshLambertMaterial({color:c,flatShading:!!f,side:T.DoubleSide});
+
+/* ---------- река ---------- */
 const P=[[0,0],[0,-45],[30,-85],[75,-100],[115,-75],[120,-30],[90,5],[50,20],[20,55],[25,105],[65,135],[115,125],[145,90],[185,80],[220,105],[225,150],[195,185],[150,190],[120,225],[135,270],[185,290]];
 const curve=new T.CatmullRomCurve3(P.map(p=>new T.Vector3(p[0],0,p[1])),false,'centripetal');
 const N=900,C=curve.getSpacedPoints(N),TG=[],NM=[],HW=[];
@@ -69,11 +78,14 @@ strip([[i=>-HW[i]-.6,.06],[i=>HW[i]+.6,.06]],wm);
 const slab=lam(0x6a5340,1);
 for(const sg of[-1,1])strip([[i=>sg*(HW[i]+.6),.06],[i=>sg*(HW[i]+.6),-1.4]],slab);
 strip([[i=>-HW[i]-.6,-1.4],[i=>HW[i]+.6,-1.4]],slab);
+/* далёкая локация внизу: земля, горы, облака */
 const ground=new T.Mesh(new T.PlaneGeometry(1600,1600),lam(0x5fae45));ground.rotation.x=-Math.PI/2;ground.position.set(110,-70,100);sc.add(ground);
 const hillM=lam(0x4f9a5a,1),mountM=lam(0x7d8aa5,1);
 for(let k=0;k<26;k++){const a=k/26*6.283+rnd()*.2,rr=330+rnd()*80,h=60+rnd()*60,m=new T.Mesh(new T.ConeGeometry(40+rnd()*40,h,7),k%3?hillM:mountM);m.position.set(110+Math.cos(a)*rr,-70+h/2,100+Math.sin(a)*rr);sc.add(m)}
 const cmat=new T.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.85});
 for(let k=0;k<30;k++){const c=new T.Mesh(new T.SphereGeometry(1,8,6),cmat);c.scale.set(14+rnd()*14,3,9+rnd()*8);c.position.set(-80+rnd()*400,-20-rnd()*35,-100+rnd()*420);sc.add(c)}
+
+/* ---------- препятствия: ВСЁ УБРАНО ---------- */
 const OB=[],spk=[],rocks=[],logs=[];
 const at=(s,o)=>{const i=Math.round(s*N);return[C[i].x+NM[i].x*o,C[i].z+NM[i].z*o,i]};
 function spikeLine(s,go,gw){gw+=.6;const i=Math.round(s*N),h=HW[i];go=Math.max(-(h-gw/2),Math.min(h-gw/2,go));
@@ -109,6 +121,9 @@ function pool(s,dir){const i=Math.round(s*N),r=Math.min(6,HW[i]*.95),x=C[i].x,z=
  const pm=new T.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.55,depthWrite:false,side:T.DoubleSide});
  for(let j=0;j<4;j++){const r0=r*(.12+.22*j);sp2.add(new T.Mesh(new T.RingGeometry(r0,r0+.3,28,1,j*1.7,Math.PI*1.35),pm))}
  sc.add(g);POOL.push({x,z,r,k:dir*4.5,m:sp2})}
+/* --- все вызовы препятствий удалены --- */
+
+/* стартовая зона: причал, задняя стенка, борта и арка «СТАРТ» — выйти назад или в сторону нельзя */
 {const wm2=new T.MeshStandardMaterial({color:0xa86c34,roughness:.85}),i6=12,n6=NM[i6],t6=TG[i6],w6=HW[i6]+.6;
  const dock=new T.Mesh(new T.BoxGeometry(2*w6+8,1.6,12),wm2);dock.position.set(C[i6].x-t6.x*6.3,-.7,C[i6].z-t6.z*6.3);dock.rotation.y=Math.atan2(t6.x,t6.z);dock.receiveShadow=true;sc.add(dock);
  const wall=new T.Mesh(new T.BoxGeometry(2*w6+.4,1.2,.5),wm2);wall.position.set(C[i6].x,.5,C[i6].z);wall.rotation.y=-Math.atan2(n6.z,n6.x);wall.castShadow=true;sc.add(wall);
@@ -124,9 +139,11 @@ if(rocks.length){const g=new T.DodecahedronGeometry(1,0),m=new T.MeshStandardMat
  rocks.forEach(r=>{const o=new T.Mesh(g,m);o.position.set(r[0],.15,r[1]);o.scale.set(r[2],r[2]*.8,r[2]);o.rotation.y=r[0];o.castShadow=true;sc.add(o)})}
 if(logs.length){const g=new T.CylinderGeometry(.4,.4,5,10),m=new T.MeshStandardMaterial({color:0x8a5a2b,roughness:.9});
  logs.forEach(l=>{const gr=new T.Group(),o=new T.Mesh(g,m);o.rotation.z=Math.PI/2;o.castShadow=true;gr.add(o);gr.position.set(l[0],.05,l[1]);gr.rotation.y=-l[2];sc.add(gr)})}
+/* декор: деревья (instanced) на далёкой земле */
 {const tr=[];for(let k=0;k<260;k++)tr.push([-120+rnd()*480,-150+rnd()*520,3+rnd()*2.5]);
  const a=new T.InstancedMesh(new T.CylinderGeometry(.25,.35,1.6,6),lam(0x7a5230),tr.length),b=new T.InstancedMesh(new T.ConeGeometry(1.6,3.6,7),lam(0x2f9a45,1),tr.length),d=new T.Object3D();
  tr.forEach((t,i)=>{d.position.set(t[0],-70+.8*t[2],t[1]);d.scale.setScalar(t[2]);d.updateMatrix();a.setMatrixAt(i,d.matrix);d.position.y=-70+3*t[2];d.updateMatrix();b.setMatrixAt(i,d.matrix)});sc.add(a,b)}
+/* контрольные точки и финиш */
 const CPI=[.0244,.1,.3,.5,.76,.89].map(s=>Math.round(s*N)),FIN=N-10,flags=[];
 const cpAnim=[];
 CPI.forEach((i,k)=>{if(!k)return;const n=NM[i],h=HW[i],a0=-Math.atan2(n.z,n.x),fm=new T.MeshLambertMaterial({color:0xcc4444,side:T.DoubleSide}),rm=[],fl=[];
@@ -144,65 +161,92 @@ CPI.forEach((i,k)=>{if(!k)return;const n=NM[i],h=HW[i],a0=-Math.atan2(n.z,n.x),f
 {const i=FIN,n=NM[i],h=HW[i],ch=ctex(64,16,(g)=>{for(let x=0;x<8;x++)for(let y=0;y<2;y++){g.fillStyle=(x+y)%2?'#111':'#fff';g.fillRect(x*8,y*8,8,8)}});ch.repeat.set(6,1);
  const bar=new T.Mesh(new T.BoxGeometry(2*h+3,1,.4),new T.MeshLambertMaterial({map:ch}));bar.position.set(C[i].x,5,C[i].z);bar.rotation.y=-Math.atan2(n.z,n.x);sc.add(bar);
  for(const s of[-1,1]){const p=new T.Mesh(new T.CylinderGeometry(.3,.3,6.4,8),lam(0xffffff));p.position.set(C[i].x+n.x*s*(h+.3),1.8,C[i].z+n.z*s*(h+.3));sc.add(p)}}
-const raftG=new T.Group();raftG.scale.setScalar(2);sc.add(raftG);
+
+/* ---------- плот и бегемот ---------- */
+const raftG=new T.Group();sc.add(raftG);
 const wood=ctex(64,64,(g,w,h)=>{g.fillStyle='#b97a3d';g.fillRect(0,0,w,h);for(let i=0;i<60;i++){g.fillStyle=`rgba(${70+rnd()*50|0},40,10,.25)`;g.fillRect(0,rnd()*h,w,1+rnd()*2)}});
 const wmat=new T.MeshStandardMaterial({map:wood,roughness:.85});
 for(let z=-1.05;z<=1.06;z+=.35){const len=2*Math.sqrt(R*R-z*z),b=new T.Mesh(new T.BoxGeometry(len,.3,.32),wmat);b.position.set(0,0,z);b.castShadow=b.receiveShadow=true;raftG.add(b)}
 const rim=new T.Mesh(new T.TorusGeometry(R,.07,6,28),new T.MeshStandardMaterial({color:0x6b4a2a,roughness:.9}));rim.rotation.x=Math.PI/2;rim.position.y=.14;raftG.add(rim);
-const foam=new T.Mesh(new T.RingGeometry(R*.95,R*1.35,28),new T.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.5,depthWrite:false}));foam.rotation.x=-Math.PI/2;foam.position.y=.1;sc.add(foam);
-const foam2=new T.Mesh(new T.RingGeometry(.55,1,24),foam.material);foam2.rotation.x=-Math.PI/2;sc.add(foam2);
-const pivot=new T.Object3D();const body=new T.Group();pivot.add(body);pivot.scale.setScalar(1.44);sc.add(pivot);
-const butt=new T.Object3D();
-let hippoMixer=null,hippoAction=null,hippoModel=null;
-const loader=new T.GLTFLoader();
-loader.load('BegemotAnim.glb',(gltf)=>{
- const model=gltf.scene;hippoModel=model;model.rotation.y=Math.PI;
- const rawBox=new T.Box3().setFromObject(model),rawSize=rawBox.getSize(new T.Vector3());
- const fitScale=2.15/Math.max(rawSize.y,.001);model.scale.setScalar(fitScale);
- const box=new T.Box3().setFromObject(model),center=box.getCenter(new T.Vector3());
- model.position.x=-center.x;model.position.z=-center.z;model.position.y=-box.min.y-.04;
- model.traverse(child=>{if(child.isMesh){child.castShadow=true;child.receiveShadow=true;const mats=Array.isArray(child.material)?child.material:[child.material];mats.forEach(mat=>{if(mat){if(mat.map){mat.map.encoding=T.sRGBEncoding;mat.map.needsUpdate=true}const label=((child.name||'')+' '+(mat.name||'')).toLowerCase();const isEye=/(eye|eyeball|iris|pupil)/.test(label);if(mat.color)mat.color.set(isEye?0x35b9e8:0x9b7057);if(isEye){mat.emissive=new T.Color(0x06364a);mat.emissiveIntensity=.22}else if(mat.emissive){mat.emissive.set(0x000000)}mat.needsUpdate=true}})}});
- body.add(model);
- // Точка выхода привязана к тазу модели, поэтому струя следует за бегемотом без запаздывания
- butt.position.set(0,.28,.82);model.add(butt);
- if(gltf.animations&&gltf.animations.length){hippoMixer=new T.AnimationMixer(model);hippoAction=hippoMixer.clipAction(gltf.animations[0]);hippoAction.setLoop(T.LoopRepeat,Infinity);hippoAction.play();hippoAction.paused=true;}
-},undefined,(err)=>{console.error('ОШИБКА ЗАГРУЗКИ BegemotAnim.glb:',err)});
-body.position.set(0,-.08,0);const V_UP=0,V_THR=.12;
-const FX=[];const _q=new T.Quaternion(),_j=new T.Vector3(),_up=new T.Vector3(0,0,1);
-function jet(){pivot.updateWorldMatrix(true,false);pivot.getWorldQuaternion(_q);_j.set(0,0,1).applyQuaternion(_q);_j.y=0;return _j.normalize()}
-function spawn(){
- const j=jet(),origin=new T.Vector3();butt.getWorldPosition(origin);
- const group=new T.Group();group.position.copy(origin);group.quaternion.setFromUnitVectors(_up,j);sc.add(group);
- const life=1.25+Math.random()*.35;
- // Несколько крупных мягких объёмов сливаются в плотное облако, вытянутое от точки выхода
- for(let n=0;n<9;n++){
-  const radius=.24+Math.random()*.24;
-  const geo=new T.SphereGeometry(1,12,10);
-  const mat=new T.MeshStandardMaterial({color:n%3===0?0x123d16:(n%3===1?0x245c18:0x8cff35),roughness:1,transparent:true,opacity:.92,depthWrite:false});
-  const cloud=new T.Mesh(geo,mat);
-  const along=.05+Math.random()*.7;
-  cloud.position.set((Math.random()-.5)*.48,(Math.random()-.5)*.38,along);
-  cloud.scale.set(radius*1.25,radius*.8,radius*(.9+Math.random()*.7));
-  group.add(cloud);
- }
- FX.push({group,life,max:life,velocity:j.clone().multiplyScalar(1.45+Math.random()*.55).add(new T.Vector3(rf.vx*.12,.06,rf.vz*.12)),spin:(Math.random()-.5)*.45});
- while(FX.length>16){const old=FX.shift();old.group.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose()});sc.remove(old.group)}
+const foam=new T.Mesh(new T.RingGeometry(R*.95,R*1.35,28),new T.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.5,depthWrite:false}));foam.rotation.x=-Math.PI/2;foam.position.y=.1;sc.add(foam);const foam2=new T.Mesh(new T.RingGeometry(.55,1,24),foam.material);foam2.rotation.x=-Math.PI/2;sc.add(foam2);
+const pivot=new T.Object3D(),body=new T.Group();pivot.add(body);pivot.scale.setScalar(.72);sc.add(pivot);
+
+/* ---------- НОВЫЙ ПЕРСОНАЖ: бирюзовый бегемот-моряк (оригинальный дизайн) ---------- */
+const hm=c=>new T.MeshStandardMaterial({color:c,roughness:.55}),
+ MB=hm(0x45aab8),ML=hm(0x7cd0d4),MS=hm(0xf3e8cc),MD=hm(0x23303a),MW=hm(0xffffff),MP=hm(0xff9fb2),MR=hm(0xe0453a),MN=hm(0x23407a);
+function sp(m,x,y,z,sx,sy,sz,par){const o=new T.Mesh(new T.SphereGeometry(1,16,12),m);o.position.set(x,y,z);o.scale.set(sx,sy,sz);o.castShadow=true;(par||body).add(o);return o}
+/* тело: бочка, широкие плечи, светлое пузо (в локальных осях тела z — вверх, -y — к плоту) */
+sp(MB,0,.55,.1,.72,.62,.95);sp(MB,0,.55,.75,.8,.55,.45);sp(MS,0,.25,0,.58,.45,.8);
+const rump=sp(MB,0,.66,-.5,.62,.55,.5);
+/* толстые руки */
+for(const s of[-1,1]){const a=new T.Mesh(new T.CylinderGeometry(.2,.17,.8,10),MB);a.rotation.x=Math.PI/2;a.position.set(s*.86,.42,.35);a.castShadow=true;body.add(a);
+ sp(MB,s*.82,.45,.75,.28,.28,.28);sp(MB,s*.86,.42,-.08,.2,.22,.2)}
+/* повязка на шее */
+{const b=new T.Mesh(new T.TorusGeometry(.62,.09,8,24),MR);b.position.set(0,.5,1.02);b.scale.set(1.15,1,1);b.castShadow=true;body.add(b);sp(MR,0,-.1,1.02,.14,.14,.14)}
+/* голова (в системе головы: x — вбок, y — вверх, z — вперёд к плоту) */
+const head=new T.Group();head.position.set(0,.55,1.3);body.add(head);
+sp(MB,0,0,0,.55,.45,.5,head);sp(ML,0,-.1,.4,.5,.3,.36,head);sp(MS,0,-.3,.28,.42,.18,.3,head);
+sp(MP,-.34,-.12,.3,.1,.08,.06,head);sp(MP,.34,-.12,.3,.1,.08,.06,head);
+const eyes=[];
+for(const s of[-1,1]){
+ sp(MD,s*.17,.02,.72,.07,.06,.04,head);                                    // ноздри
+ const t=new T.Mesh(new T.ConeGeometry(.05,.2,6),MS);t.position.set(s*.2,-.2,.52);head.add(t);   // клыки
+ const ew=new T.Group();ew.position.set(s*.24,.34,.28);head.add(ew);sp(MW,0,0,0,.17,.17,.17,ew);
+ const ep=new T.Group();ep.position.set(s*.24,.35,.43);head.add(ep);sp(MD,0,0,0,.09,.09,.09,ep);
+ eyes.push({ew,ep});
+ sp(MD,s*.24,.58,.3,.17,.04,.06,head);                                     // брови
+ sp(MB,s*.4,.42,-.12,.1,.12,.06,head);sp(MP,s*.4,.42,-.08,.06,.08,.04,head);   // ушки
 }
-function partUpd(dt){
- for(let i=FX.length-1;i>=0;i--){const p=FX[i];p.life-=dt;
-  if(p.life<=0){p.group.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose()});sc.remove(p.group);FX.splice(i,1);continue}
-  const age=1-p.life/p.max;p.group.position.addScaledVector(p.velocity,dt);p.velocity.multiplyScalar(Math.max(0,1-.9*dt));
-  const swell=.82+Math.sin(Math.min(1,age)*Math.PI)*.38;p.group.scale.set(swell,swell,swell*(.85+age*.7));p.group.rotation.z+=p.spin*dt;
-  p.group.children.forEach(o=>{o.material.opacity=.92*(1-age*.62)});
- }
-}
+sp(MW,0,.38,-.22,.3,.18,.28,head);sp(MN,0,.34,.02,.26,.03,.14,head);       // матросская шапочка
+const V_UP=-Math.PI/2,V_THR=V_UP+.24;      // строго вертикальная стойка, слегка наклоняется при пуке
+body.position.set(0,.35,.15);
+body.rotation.x=V_UP;head.rotation.x=-V_UP;
+const butt=new T.Object3D();butt.position.set(0,.7,-1.05);body.add(butt);
+
+/* ---------- анимированный бегемот из BegemotAnim.glb (положите файл рядом с index.html) ---------- */
+let emitter=butt,mixer=null,hipsB=null,headB=null,animSpd=.55;const gEyes=[];
+(function loadHippo(){const ld=$('ld');
+ if(!T.GLTFLoader){ld.textContent='GLTFLoader не загрузился — запасная модель';return}
+ new T.GLTFLoader().load('BegemotAnim.glb',gl=>{
+  const root=gl.scene,bone=n=>root.getObjectByName('mixamorig'+n)||root.getObjectByName('mixamorig:'+n);
+  const sm=(v,a,b)=>{const t=Math.min(1,Math.max(0,(v-a)/(b-a)));return t*t*(3-2*t)};
+  const cB=new T.Color(0x45aab8),cC=new T.Color(0xf3e8cc),cL=new T.Color(0x7cd0d4);
+  root.traverse(o=>{if(!o.isMesh)return;const g=o.geometry,p=g.attributes.position,col=new Float32Array(p.count*3),c=new T.Color();
+   for(let i=0;i<p.count;i++){const x=p.getX(i),y=p.getY(i),z=p.getZ(i);
+    const belly=sm(z,.02,.2)*sm(y,.5,.7)*(1-sm(y,1.35,1.55))*(1-sm(Math.abs(x),.35,.5)),snout=sm(y,1.6,1.7)*sm(z,.3,.45);   // раскраска по зонам: пузо и морда светлее
+    c.copy(cB).lerp(cL,snout*.8).lerp(cC,belly);col[i*3]=c.r;col[i*3+1]=c.g;col[i*3+2]=c.b}
+   g.setAttribute('color',new T.BufferAttribute(col,3));
+   o.material=new T.MeshStandardMaterial({vertexColors:true,roughness:.6,metalness:0});o.castShadow=true;o.frustumCulled=false});
+  headB=bone('Head');hipsB=bone('Hips');
+  const em=new T.MeshStandardMaterial({color:0xffffff,roughness:.3}),pm=new T.MeshStandardMaterial({color:0x23303a,roughness:.3});
+  for(const s of[-1,1]){const ew=new T.Group();ew.position.set(s*.17,.63,.36);ew.add(new T.Mesh(new T.SphereGeometry(.1,14,10),em));
+   const ep=new T.Group();ep.position.set(s*.17,.64,.44);ep.add(new T.Mesh(new T.SphereGeometry(.055,10,8),pm));headB.add(ew,ep);gEyes.push({ew,ep})}
+  emitter=new T.Object3D();emitter.position.set(.042,.135,-.434);hipsB.add(emitter);   // источник пука — на крупе, едет вместе с анимацией
+  mixer=new T.AnimationMixer(root);mixer.clipAction(gl.animations[0]).play();
+  root.position.set(0,-.55,-.45);pivot.add(root);body.visible=false;ld.remove()},
+ undefined,()=>{ld.textContent='Не удалось загрузить BegemotAnim.glb (положите рядом с index.html, запуск через http-сервер) — запасная модель'})})();
+
+/* ---------- частицы (пул) ---------- */
+const ptx=ctex(64,64,g=>{const gr=g.createRadialGradient(32,32,2,32,32,30);gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(0,0,64,64)});
+const PS=[];for(let i=0;i<90;i++){const s=new T.Sprite(new T.SpriteMaterial({map:ptx,transparent:true,depthWrite:false}));s.visible=false;sc.add(s);PS.push({s,l:0,m:1,v:new T.Vector3()})}
+let pi=0;
+const _q=new T.Quaternion(),_j=new T.Vector3();
+function jet(){pivot.updateWorldMatrix(true,false);pivot.getWorldQuaternion(_q);_j.set(0,0,-1).applyQuaternion(_q);_j.y=0;return _j.normalize()}
+function spawn(){const p=PS[pi=(pi+1)%PS.length],j=jet();emitter.getWorldPosition(p.s.position);p.s.position.y=Math.max(p.s.position.y,.3);const r=()=>(Math.random()-.5)*1.2;
+ p.v.set(j.x*(3+Math.random()*2.5)+rf.vx*.4+r(),.4+Math.random()*.8,j.z*(3+Math.random()*2.5)+rf.vz*.4+r());p.l=p.m=.55+Math.random()*.5;p.s.visible=true}
+function partUpd(dt){for(const p of PS){if(p.l<=0)continue;p.l-=dt;if(p.l<=0){p.s.visible=false;continue}const k=1-p.l/p.m;
+ p.s.position.addScaledVector(p.v,dt);p.v.multiplyScalar(Math.max(0,1-2*dt));p.s.scale.setScalar(.35+k*1.5);p.s.material.opacity=.7*(1-k);p.s.material.color.setHSL(.22-.1*k,.55,.45+.3*k)}}
+
+/* ---------- звук ---------- */
 let ac,go,osc;
 function audio(){if(ac){if(ac.state==='suspended')ac.resume();return}try{ac=new(window.AudioContext||window.webkitAudioContext)();go=ac.createGain();go.gain.value=0;osc=ac.createOscillator();osc.type='sawtooth';osc.frequency.value=70;
  const lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=420;osc.connect(lp);lp.connect(go);go.connect(ac.destination);osc.start()}catch(e){ac=null}}
+
+/* ---------- состояние и физика ---------- */
 const rf={x:0,z:0,vx:0,vz:0};
 let abys=false,rfOut=false,rfy=0,rvy=0,ang=0,av=0,held=0,gasPrev=0,idx=4,cpI=0,beach=0,time=0,deadT=0,shake=0,puff=0,thr=0,emit=0,acc2=0,snap=1,bobT=0,sinkAmt=0,headShake=0;
 const kb={l:0,r:0,g:0},tb={l:0,r:0,g:0};
-function setPivot(){const hippoRadius=R*2+.02;pivot.position.set(rf.x+Math.cos(ang)*hippoRadius,-.62-sinkAmt+Math.sin(bobT*2.3)*.012+rfy,rf.z+Math.sin(ang)*hippoRadius);pivot.rotation.set(0,Math.PI/2-ang,0)}
+function setPivot(){pivot.position.set(rf.x+Math.cos(ang)*HP,.5-sinkAmt+Math.sin(bobT*2.3)*.04+rfy,rf.z+Math.sin(ang)*HP);pivot.rotation.set(0,Math.atan2(-Math.cos(ang),-Math.sin(ang)),0)}
 function toast(t){const e=$('toast');e.textContent=t;e.style.opacity=1;clearTimeout(toast.h);toast.h=setTimeout(()=>e.style.opacity=0,1400)}
 function die(kind){if(state!=='play')return;setS('dead');deadT=0;abys=kind==='abyss';$('dead').querySelector('h1').textContent=abys?'Ааа-а-а!':'Бульк!';shake=1}
 function step(dt){
@@ -219,14 +263,14 @@ function step(dt){
  rf.x+=rf.vx*dt;rf.z+=rf.vz*dt;
  let best=1e9,bi=idx;for(let j=Math.max(0,idx-20);j<=Math.min(N,idx+20);j++){const dd=Math.hypot(C[j].x-rf.x,C[j].z-rf.z);if(dd<best){best=dd;bi=j}}idx=bi;
  for(const o of KIN)o.upd(dt);
- const hx=rf.x+Math.cos(ang)*(R*2+.02),hz=rf.z+Math.sin(ang)*(R*2+.02);
+ const hx=rf.x+Math.cos(ang)*(HP+.45),hz=rf.z+Math.sin(ang)*(HP+.45);
  for(const o of OB){if(Math.abs(o.ax-rf.x)>9||Math.abs(o.az-rf.z)>9)continue;
   if(o.d&&Math.hypot(hx-o.ax,hz-o.az)<.6+o.r){die('spike');return}
   const px=o.bx-o.ax,pz=o.bz-o.az,L=px*px+pz*pz;let u=L?((rf.x-o.ax)*px+(rf.z-o.az)*pz)/L:0;u=u<0?0:u>1?1:u;
   let dx=rf.x-(o.ax+px*u),dz=rf.z-(o.az+pz*u);const dd=Math.hypot(dx,dz),m=R+o.r;
   if(dd<m){if(o.d){die('spike');return}if(dd<1e-4){dx=1;dz=0}else{dx/=dd;dz/=dd}
    rf.x+=dx*(m-dd);rf.z+=dz*(m-dd);const bv=o.vb?o.vb(o.ax+px*u,o.az+pz*u):[0,0],vn=(rf.vx-bv[0])*dx+(rf.vz-bv[1])*dz;
-   if(vn<0){const k=1+(o.e||.45);rf.vx-=k*vn*dx;rf.vz-=k*vn*dz}shake=Math.min(1,-vn/8);}}
+   if(vn<0){{const k=1+(o.e||.45);rf.vx-=k*vn*dx;rf.vz-=k*vn*dz}shake=Math.min(1,-vn/8);}}}
  rfOut=best>HW[idx]+.3;if(rfOut){die('abyss');return}
  for(let k=cpI+1;k<CPI.length;k++)if(idx>=CPI[k]){cpI=k;flags[k-1].material.color.set(0x44cc55);toast('Контрольная точка!')}
  if(idx>=FIN){setS('win');$('wt').textContent=fmt(time)}
@@ -236,6 +280,8 @@ function fmt(t){return Math.floor(t/60)+':'+(t%60).toFixed(1).padStart(4,'0')}
 function respawn(){const i=CPI[cpI],t=TG[i];rf.x=C[i].x;rf.z=C[i].z;rf.vx=rf.vz=0;idx=i;ang=Math.atan2(-t.z,-t.x);av=0;held=0;gasPrev=0;beach=0;shake=0;abys=false;rfy=rvy=0;sinkAmt=0;headShake=0;
  pivot.rotation.set(0,0,0);setPivot();camDir.copy(t);snap=1;setS('play')}
 function startGame(){cpI=0;time=0;flags.forEach(f=>f.material.color.set(0xcc4444));audio();respawn()}
+
+/* ---------- состояния/UI ---------- */
 function setS(s){state=s;acc2=0;['menu','pause','win'].forEach(k=>$(k).classList.toggle('on',s===k));$('dead').classList.toggle('on',s==='dead');
  const h=s==='play'||s==='pause'||s==='dead';$('hud').classList.toggle('on',h);$('touch').classList.toggle('on',s==='play'||s==='dead');gp(s==='play');
  if(ac)s==='play'||s==='dead'?ac.resume():ac.suspend()}
@@ -255,6 +301,8 @@ function bind(id,key){const el=$(id);el.addEventListener('pointerdown',e=>{e.pre
 bind('bl','l');bind('br','r');bind('bg','g');
 addEventListener('contextmenu',e=>e.preventDefault());
 document.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
+
+/* ---------- камера и визуал ---------- */
 const camDir=new T.Vector3(0,0,-1),_w=new T.Vector3(),_l=new T.Vector3();
 function camUpd(dt){
  if(state==='menu'){const a=tNow*.35;cam.position.set(rf.x+Math.cos(a)*7,4,rf.z+Math.sin(a)*7);cam.lookAt(rf.x,.6,rf.z);return}
@@ -263,28 +311,43 @@ function camUpd(dt){
  _w.set(rf.x-camDir.x*11,10+sp0*.15,rf.z-camDir.z*11);if(snap)cam.position.copy(_w);else cam.position.lerp(_w,1-Math.exp(-5*dt));
  _l.set(rf.x+camDir.x*(5+sp0*.3),0,rf.z+camDir.z*(5+sp0*.3));cam.lookAt(_l);snap=0}
 function visual(dt){
- if(hippoMixer&&thr&&state!=='pause')hippoMixer.update(dt);
  bobT+=dt;const dv=state==='pause'?0:dt;
  sinkAmt=state==='dead'?Math.min(deadT,1.4)*.5:0;
  setPivot();
  raftG.position.set(rf.x,.08+Math.sin(bobT*2)*.03-sinkAmt+rfy,rf.z);
- raftG.rotation.set(Math.sin(bobT*1.6)*.012,0,Math.cos(bobT*1.3)*.012+(state==='dead'?sinkAmt*.4:0));
- if(state==='menu'||state==='win'){pivot.position.y=.18-sinkAmt+(state==='win'?Math.abs(Math.sin(bobT*6))*.6:0);if(state==='win')pivot.rotation.y+=dt*4}
- body.rotation.x+=((thr?V_THR:V_UP)-body.rotation.x)*Math.min(1,dt*8);
- if(hippoAction){if(thr&&state==='play'){hippoAction.paused=false;hippoAction.play()}else hippoAction.paused=true;}
- headShake=0;body.rotation.z=0;body.rotation.y=0;body.scale.y=1
- if(state==='play'&&thr){emit+=dt*12;while(emit>=1){spawn();emit--}}
- partUpd(dv);foam.position.set(rf.x,.1,rf.z);const sp0=Math.hypot(rf.vx,rf.vz);foam.scale.setScalar(1+Math.sin(bobT*4)*.05+sp0*.01);foam.material.opacity=.3+Math.min(.4,sp0*.04);
+ raftG.rotation.set(Math.sin(bobT*1.6)*.03+(Math.random()-.5)*shake*.1,0,Math.cos(bobT*1.3)*.03+(Math.random()-.5)*shake*.1+(state==='dead'?sinkAmt*.4:0));
+ if(state==='menu'||state==='win'){pivot.position.y=.5-sinkAmt+(state==='win'?Math.abs(Math.sin(bobT*6))*.6:0);if(state==='win')pivot.rotation.y+=dt*4}
+ body.rotation.x+=((thr?V_THR:V_UP)-body.rotation.x)*Math.min(1,dt*8);body.scale.y=1+Math.sin(bobT*3)*.02;
+ /* --- смешная тряска головы и «выпучивание» глаз во время пука --- */
+ headShake+=((thr?1:0)-headShake)*Math.min(1,dt*10);
+ const hs=headShake;
+ head.rotation.x=-body.rotation.x+Math.sin(bobT*55)*.18*hs;
+ head.rotation.z=Math.sin(bobT*47)*.22*hs;
+ head.rotation.y=Math.sin(bobT*33)*.12*hs;
+ const es=1+hs*.55;
+ for(const e of eyes){e.ew.scale.setScalar(es);e.ep.scale.setScalar(es)}
+ puff=Math.max(0,puff-dv*3);
+ if(mixer){   // скорость анимации: спокойно / при пуке быстрее / победа — танец
+  const tg2=state==='win'?2.2:state==='dead'?0:thr?1.6:.55;animSpd+=(tg2-animSpd)*Math.min(1,dt*6);mixer.update(dv*animSpd);
+  hipsB.scale.setScalar(1+puff*.1);headB.rotation.z+=Math.sin(bobT*47)*.2*hs;headB.rotation.x+=Math.sin(bobT*55)*.1*hs;
+  for(const e of gEyes){e.ew.scale.setScalar(es);e.ep.scale.setScalar(es)}}
+ rump.scale.set(.62+puff*.2,.55+puff*.15,.5+puff*.2);
+ if(state==='play'&&thr){emit+=dt*45;while(emit>=1){spawn();emit--}}
+ partUpd(dv);
+ foam.position.set(rf.x,.1,rf.z);const sp0=Math.hypot(rf.vx,rf.vz);foam.scale.setScalar(1+Math.sin(bobT*4)*.05+sp0*.01);foam.material.opacity=.3+Math.min(.4,sp0*.04);
  for(const o of KIN)o.sync();for(const m of MINES)m.g.position.y=.2+Math.sin(bobT*2+m.g.position.x)*.08;for(const p of POOL)p.m.rotation.z-=dv*(p.k>0?1:-1)*1.5;
  for(const a of cpAnim){const q=1+Math.sin(bobT*3+a.k)*.04;a.rg.scale.setScalar(q);a.fr.scale.setScalar(q);a.fl.forEach((f,j)=>f.rotation.y=Math.sin(bobT*4+a.k+j)*.3)}
- foam2.position.set(pivot.position.x,.1,pivot.position.z);foam2.visible=true;foam2.scale.setScalar(1+Math.sin(bobT*3)*.08);wtex.offset.y-=dv*.05;
+ foam2.position.set(pivot.position.x,.1,pivot.position.z);foam2.visible=true;foam2.scale.setScalar(1+Math.sin(bobT*3)*.08);
+ wtex.offset.y-=dv*.05;
  sun.position.set(rf.x+10,18,rf.z+6);sun.target.position.set(rf.x,0,rf.z);
  if(go){go.gain.setTargetAtTime(state==='play'&&thr?.18:0,ac.currentTime,.03);osc.frequency.value=60+Math.random()*25}
- $('fill').style.width=Math.min(100,idx/FIN*100)+'%';$('tm').textContent=fmt(time);camUpd(dt)}
+ $('fill').style.width=Math.min(100,idx/FIN*100)+'%';$('tm').textContent=fmt(time);
+ camUpd(dt)}
 let last=0;
 function loop(ms){requestAnimationFrame(loop);const dt=Math.min((ms-last)/1000||0,.05);last=ms;tNow+=dt;
  if(state==='play'){time+=dt;acc2+=dt;while(acc2>=1/60&&state==='play'){step(1/60);acc2-=1/60}}
- else if(state==='dead'){deadT+=dt;if(abys&&rfOut){rvy-=18*dt;rfy+=rvy*dt}rf.x+=rf.vx*dt;rf.z+=rf.vz*dt;const f=Math.exp(-1.2*dt);rf.vx*=f;rf.vz*=f;if(deadT>1.4)respawn()}
+ else if(state==='dead'){deadT+=dt;if(abys&&rfOut){rvy-=18*dt;rfy+=rvy*dt}rf.x+=rf.vx*dt;rf.z+=rf.vz*dt;const f=Math.exp(-1.2*dt);rf.vx*=f;rf.vz*=f;if(deadT>1.3)respawn()}
  visual(dt);rd.render(sc,cam)}
-rf.x=C[22].x;rf.z=C[22].z;idx=22;ang=Math.atan2(-TG[22].z,-TG[22].x);setPivot();requestAnimationFrame(loop);
+rf.x=C[22].x;rf.z=C[22].z;idx=22;ang=Math.atan2(-TG[22].z,-TG[22].x);setPivot();
+requestAnimationFrame(loop);
 </script></body></html>
