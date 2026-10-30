@@ -50,9 +50,13 @@
       <footer class="levels-footer"><span>FRAGMENT.GAMES</span><span>ПУТЕШЕСТВИЕ БЕГЕМОТА</span></footer>
     </div>
   </section>
-  <section id="level-one-screen" class="screen level-one-screen hidden" aria-label="Первый уровень">
-    <button class="back-button" id="level-one-back">← К УРОВНЯМ</button>
-    <div class="level-intro"><div class="eyebrow"><span></span> ПЕРВЫЙ ЭТАП ПУТЕШЕСТВИЯ</div><div class="level-number">01</div><h2>ПЕРВЫЙ <em>СПЛАВ</em></h2><p>Здесь начнётся приключение. Скоро бегемот отправится в путь по реке и сможет собирать звёзды.</p><div class="level-stars"><span>☆</span><span>☆</span><span>☆</span></div><span class="stage-chip">УРОВЕНЬ 01 · В РАЗРАБОТКЕ</span></div>
+  <section id="level-one-screen" class="screen level-one-screen hidden" aria-label="Уровень 1 — Первый сплав">
+    <div id="game-world"></div>
+    <div class="game-vignette"></div>
+    <header class="game-hud"><button class="hud-back" id="level-one-back">← УРОВНИ</button><div class="hud-level"><span>FRAGMENT.GAMES</span><b>01 / ПЕРВЫЙ СПЛАВ</b></div><div class="hud-stars" id="hud-stars"><span>☆</span><span>☆</span><span>☆</span></div></header>
+    <div class="game-hint" id="game-hint"><b>ПУСТИМ ПЛОТ В ПУТЬ</b><span>Удерживай кнопку ПУК — бегемот ускорит плот!</span></div>
+    <div class="game-controls"><button class="steer-control" id="steer-left" aria-label="Повернуть влево">◀</button><button class="fart-control" id="fart-button"><span class="fart-icon">〰</span><b>ПУК!</b><small>УДЕРЖИВАЙ</small></button><button class="steer-control" id="steer-right" aria-label="Повернуть вправо">▶</button></div>
+    <div class="game-speed"><span>СКОРОСТЬ ПЛОТА</span><div><i id="speed-fill"></i></div></div>
   </section>
   <section id="game-screen" class="screen game-screen hidden">
     <button class="back-button" id="back-to-menu">← В МЕНЮ</button>
@@ -67,6 +71,9 @@
       <div id="modal-content"></div>
     </div>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="assets/js/game.js"></script>
   <script src="assets/js/main.js"></script>
 </body>
 </html>
