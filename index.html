@@ -152,14 +152,20 @@ const rim=new T.Mesh(new T.TorusGeometry(R,.07,6,28),new T.MeshStandardMaterial(
 const foam=new T.Mesh(new T.RingGeometry(R*.95,R*1.35,28),new T.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.5,depthWrite:false}));foam.rotation.x=-Math.PI/2;foam.position.y=.1;sc.add(foam);
 const foam2=new T.Mesh(new T.RingGeometry(.55,1,24),foam.material);foam2.rotation.x=-Math.PI/2;sc.add(foam2);
 const pivot=new T.Object3D();const body=new T.Group();pivot.add(body);pivot.scale.setScalar(1.44);sc.add(pivot);
-const MODEL_SCALE=1.0,MODEL_ROT_Y=Math.PI,MODEL_Y_OFFSET=-.04;
 const butt=new T.Object3D();
+let hippoMixer=null,hippoModel=null;
 const loader=new T.GLTFLoader();
-loader.load('moto_moto/scene.gltf',(gltf)=>{const model=gltf.scene;model.scale.setScalar(MODEL_SCALE);model.rotation.y=MODEL_ROT_Y;const box=new T.Box3().setFromObject(model),center=box.getCenter(new T.Vector3());
- model.position.x=-center.x;model.position.z=-center.z;model.position.y=-box.min.y+MODEL_Y_OFFSET;
+loader.load('BegemotAnim.glb',(gltf)=>{
+ const model=gltf.scene;hippoModel=model;model.rotation.y=Math.PI;
+ const rawBox=new T.Box3().setFromObject(model),rawSize=rawBox.getSize(new T.Vector3());
+ const fitScale=2.15/Math.max(rawSize.y,.001);model.scale.setScalar(fitScale);
+ const box=new T.Box3().setFromObject(model),center=box.getCenter(new T.Vector3());
+ model.position.x=-center.x;model.position.z=-center.z;model.position.y=-box.min.y-.04;
  model.traverse(child=>{if(child.isMesh){child.castShadow=true;child.receiveShadow=true;const mats=Array.isArray(child.material)?child.material:[child.material];mats.forEach(mat=>{if(mat){if(mat.map){mat.map.encoding=T.sRGBEncoding;mat.map.needsUpdate=true}if(mat.color)mat.color.set(0xffffff);if(mat.emissive)mat.emissive.set(0x000000);mat.needsUpdate=true}})}});
- body.add(model);butt.position.set(0,.18,1.08);model.add(butt);
-},undefined,(err)=>{console.error('ОШИБКА ЗАГРУЗКИ МОДЕЛИ! Проверь путь и текстуры:',err)});
+ body.add(model);
+ butt.position.set(0,.2,.78);model.add(butt);
+ if(gltf.animations&&gltf.animations.length){hippoMixer=new T.AnimationMixer(model);const action=hippoMixer.clipAction(gltf.animations[0]);action.setLoop(T.LoopRepeat,Infinity);action.play();}
+},undefined,(err)=>{console.error('ОШИБКА ЗАГРУЗКИ BegemotAnim.glb:',err)});
 body.position.set(0,-.08,0);const V_UP=0,V_THR=.12;
 const ptx=ctex(64,64,g=>{const gr=g.createRadialGradient(32,32,2,32,32,30);gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(0,0,64,64)});
 const PS=[];for(let i=0;i<90;i++){const s=new T.Sprite(new T.SpriteMaterial({map:ptx,transparent:true,depthWrite:false}));s.visible=false;sc.add(s);PS.push({s,l:0,m:1,v:new T.Vector3()})}
@@ -235,6 +241,7 @@ function camUpd(dt){
  _w.set(rf.x-camDir.x*11,10+sp0*.15,rf.z-camDir.z*11);if(snap)cam.position.copy(_w);else cam.position.lerp(_w,1-Math.exp(-5*dt));
  _l.set(rf.x+camDir.x*(5+sp0*.3),0,rf.z+camDir.z*(5+sp0*.3));cam.lookAt(_l);snap=0}
 function visual(dt){
+ if(hippoMixer)hippoMixer.update(state==='pause'?0:dt);
  bobT+=dt;const dv=state==='pause'?0:dt;
  sinkAmt=state==='dead'?Math.min(deadT,1.4)*.5:0;
  setPivot();
