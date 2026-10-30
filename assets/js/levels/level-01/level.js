@@ -2,7 +2,7 @@
 'use strict';
 const F=w.FragmentGame,T=F.THREE,$=id=>document.getElementById(id),clamp=T.MathUtils.clamp;
 let renderer,scene,camera,clock,river,raft,hippo,pivot,mixer,raf=0,running=false,gas=false,left=false,right=false,progress=.012,angle=0,angularVelocity=0,x=0,z=0,vx=0,vz=0,idx=0,finished=false,overlay=null,elapsed=0,emit=0;
-const R=1.2,HP=1.13,segments=700,obstacles=[];
+const R=1.2,HP=1.34,segments=700,obstacles=[];
 const vec=(x,y,z)=>new T.Vector3(x,y,z);
 function point(t){return river.getPointAt(clamp(t,0,1))}
 function tangent(t){return river.getTangentAt(clamp(t,0,1))}
@@ -31,7 +31,7 @@ function createHippo(){
   hippo=g.scene;hippo.scale.setScalar(.72);hippo.rotation.y=Math.PI;
   hippo.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});
   pivot.add(hippo);
-  if(g.animations&&g.animations.length){mixer=new T.AnimationMixer(hippo);const a=mixer.clipAction(g.animations[0]);a.play();a.paused=true;mixer.timeScale=0}
+  if(g.animations&&g.animations.length){mixer=new T.AnimationMixer(hippo);const a=mixer.clipAction(g.animations[0]);a.reset();a.enabled=true;a.paused=false;a.play();mixer.timeScale=0}
  },undefined,()=>fallbackHippo())}else fallbackHippo();
 }
 function fallbackHippo(){if(hippo)return;hippo=new T.Group();const m=F.material('#657574'),light=F.material('#929d94'),dark=F.material('#172322');const b=new T.Mesh(new T.SphereGeometry(.72,20,16),m);b.scale.set(1.1,.9,1.1);hippo.add(b);const sn=new T.Mesh(new T.SphereGeometry(.43,18,14),light);sn.position.set(0,-.12,.62);sn.scale.set(1,.7,.7);hippo.add(sn);for(const s of[-1,1]){const e=new T.Mesh(new T.SphereGeometry(.12,12,10),dark);e.position.set(s*.3,.48,.4);hippo.add(e)}pivot.add(hippo)}
@@ -42,9 +42,9 @@ function resize(){if(!renderer)return;const host=$('game-world');camera.aspect=h
 function nearest(){let best=1e9,bi=idx;for(let j=Math.max(0,idx-24);j<=Math.min(segments,idx+50);j++){const p=point(j/segments),d=(p.x-x)**2+(p.z-z)**2;if(d<best){best=d;bi=j}}idx=bi;progress=idx/segments;return Math.sqrt(best)}
 function setCharacters(dt){const {p,d}=frameAt(progress);raft.position.set(x,.06+Math.sin(elapsed*2)*.025,z);raft.rotation.y=Math.atan2(d.x,d.z);raft.rotation.z=clamp(-((vx*d.x+vz*d.z)*.012),-.12,.12);
  // Персонаж перемещается по окружности плота, держась за его внешний край; нижняя часть корпуса погружена в воду.
- pivot.position.set(x+Math.cos(angle)*HP,-.12+Math.sin(elapsed*2.2)*.025,z+Math.sin(angle)*HP);
- pivot.rotation.set(0,angle+Math.PI/2,0);
- if(mixer){mixer.timeScale=gas?1.45:0;if(gas)mixer.update(dt)}
+ pivot.position.set(x+Math.cos(angle)*HP,-.30+Math.sin(elapsed*2.2)*.018,z+Math.sin(angle)*HP);
+ pivot.rotation.set(0,angle-Math.PI/2,0);
+ if(mixer){mixer.timeScale=gas?1.45:0;mixer.update(dt)}
 }
 function updateHud(){const fill=$('speed-fill');if(fill)fill.style.width=(Math.hypot(vx,vz)/9*100)+'%';const hint=$('game-hint');if(hint&&!finished){const title=hint.querySelector('b'),sub=hint.querySelector('span');if(title)title.textContent=gas?'ТУРБО-ПУК!':'ПУСТИМ ПЛОТ В ПУТЬ';if(sub)sub.textContent=gas?'Бегемот работает — плот движется!':'Плот стоит. Двигай бегемота по кругу и удерживай ПУК.'}}
 function endGame(win){finished=true;gas=false;running=false;if(raf){cancelAnimationFrame(raf);raf=0}if(overlay)overlay.remove();overlay=document.createElement('div');overlay.style.cssText='position:absolute;z-index:8;inset:0;display:grid;place-items:center;background:#06100dbb;backdrop-filter:blur(9px);padding:24px;text-align:center;color:#f1f5ed;font-family:Montserrat,sans-serif';overlay.innerHTML='<div style="max-width:380px"><div style="font-size:10px;letter-spacing:.25em;color:#a6ded2;font-weight:800">FRAGMENT.GAMES</div><h2 style="font-size:clamp(38px,9vw,62px);line-height:.95;margin:18px 0;font-weight:900">'+(win?'УРОВЕНЬ ПРОЙДЕН!':'ПЛОТ ЗАСТРЯЛ!')+'</h2><p style="color:#c1d0c8;line-height:1.7">'+(win?'Бегемот добрался до финиша!':'Попробуй ещё раз и держись на реке.')+'</p><button id="retry-level" style="margin-top:18px;padding:15px 24px;background:#a6ded2;color:#09201a;border:0;font-weight:900">ИГРАТЬ ЕЩЁ</button></div>';$('level-one-screen').appendChild(overlay);$('retry-level').addEventListener('click',()=>{overlay.remove();overlay=null;reset();running=true;clock.getDelta();frame()})}
