@@ -1,2 +1,1 @@
-// Модель бегемота загружается игровым модулем assets/js/game.js.
-// Здесь позже появятся отдельные настройки скелета, анимаций и реакций персонажа.
+// Shared hippo rig and model loading are in assets/js/shared/entities/raft.js.

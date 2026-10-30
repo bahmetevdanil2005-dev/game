@@ -9,10 +9,10 @@
  for(let n=1;n<=30;n++){
   const btn=document.createElement('button');btn.className='level-card '+(n===1?'level-card-open':'level-card-locked');btn.type='button';
   btn.innerHTML='<span class="level-card-number">'+String(n).padStart(2,'0')+'</span><span class="level-card-stars">☆ ☆ ☆</span><span class="level-card-status">'+(n===1?'НАЧАТЬ':'СКОРО')+'</span>';
-  btn.addEventListener('click',()=>{if(n===1)showScreen(levelOne);else openStub('УРОВЕНЬ '+String(n).padStart(2,'0'),'<p class="modal-copy">Этот этап пока закрыт. Сначала подготовим первый уровень, а затем постепенно откроем остальные.</p><span class="stage-chip">СКОРО · В РАЗРАБОТКЕ</span>')});
+  btn.addEventListener('click',()=>{if(n===1){showScreen(levelOne);requestAnimationFrame(()=>window.FragmentGame?.levels?.level01?.start());}else openStub('УРОВЕНЬ '+String(n).padStart(2,'0'),'<p class="modal-copy">Этот этап пока закрыт. Сначала подготовим первый уровень, а затем постепенно откроем остальные.</p><span class="stage-chip">СКОРО · В РАЗРАБОТКЕ</span>')});
   grid.appendChild(btn);
  }
- $('levels-back').addEventListener('click',()=>showScreen(menu));$('level-one-back').addEventListener('click',()=>showScreen(levels));
+ $('levels-back').addEventListener('click',()=>showScreen(menu));$('level-one-back').addEventListener('click',()=>{window.FragmentGame?.levels?.level01?.stop();showScreen(levels)});
  document.querySelectorAll('[data-action]').forEach(btn=>btn.addEventListener('click',()=>{
   const a=btn.dataset.action;
   if(a==='single')showScreen(levels);

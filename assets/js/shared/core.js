@@ -1,0 +1,1 @@
+(function(w){'use strict';const F=w.FragmentGame=w.FragmentGame||{};F.THREE=w.THREE;F.shared=F.shared||{};F.levels=F.levels||{};F.material=(color,roughness=1)=>new F.THREE.MeshStandardMaterial({color,roughness});})(window);

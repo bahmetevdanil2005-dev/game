@@ -1,0 +1,1 @@
+Each playable level has its own folder: level-01/level.js, level-02/level.js, etc. Shared systems live in ../shared: entities, environment, obstacles, UI and physics. Models, textures and sounds live in assets/models, assets/textures and assets/audio. Add reusable obstacle prefabs to assets/js/shared/obstacles and configure each level locally.
