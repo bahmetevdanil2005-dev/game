@@ -208,33 +208,31 @@ let emitter=butt,mixer=null,hippoAction=null,hipsB=null,headB=null,animSpd=1;con
 (function loadHippo(){const ld=$('ld');
  if(!T.GLTFLoader){ld.textContent='GLTFLoader не загрузился — запасная модель';return}
  new T.GLTFLoader().load('BegemotAnim.glb',gl=>{
-  const root=gl.scene;
-  // Двоеточие в именах Mixamo-костей конфликтует с разбором путей PropertyBinding в некоторых версиях Three.js.
-  // Нормализуем имена костей и соответствующие им animation tracks одинаково.
-  root.traverse(o=>{if(o.name)o.name=o.name.replace(/:/g,'_')});
-  (gl.animations||[]).forEach(c=>c.tracks.forEach(t=>{t.name=t.name.replace(/:/g,'_')}));
-  const bone=n=>root.getObjectByName('mixamorig_'+n);
-  const sm=(v,a,b)=>{const t=Math.min(1,Math.max(0,(v-a)/(b-a)));return t*t*(3-2*t)};
-  const cB=new T.Color(0x45aab8),cC=new T.Color(0xf3e8cc),cL=new T.Color(0x7cd0d4);
-  root.traverse(o=>{if(!o.isMesh)return;const g=o.geometry,p=g.attributes.position,col=new Float32Array(p.count*3),c=new T.Color();
-   for(let i=0;i<p.count;i++){const x=p.getX(i),y=p.getY(i),z=p.getZ(i);
-    const belly=sm(z,.02,.2)*sm(y,.5,.7)*(1-sm(y,1.35,1.55))*(1-sm(Math.abs(x),.35,.5)),snout=sm(y,1.6,1.7)*sm(z,.3,.45);   // раскраска по зонам: пузо и морда светлее
-    c.copy(cB).lerp(cL,snout*.8).lerp(cC,belly);col[i*3]=c.r;col[i*3+1]=c.g;col[i*3+2]=c.b}
-   g.setAttribute('color',new T.BufferAttribute(col,3));
-   o.material=new T.MeshStandardMaterial({vertexColors:true,roughness:.6,metalness:0});o.castShadow=true;o.frustumCulled=false});
-  headB=bone('Head');hipsB=bone('Hips');
-  const em=new T.MeshStandardMaterial({color:0xffffff,roughness:.3}),pm=new T.MeshStandardMaterial({color:0x23303a,roughness:.3});
-  for(const s of[-1,1]){const ew=new T.Group();ew.position.set(s*.17,.63,.36);ew.add(new T.Mesh(new T.SphereGeometry(.1,14,10),em));
-   const ep=new T.Group();ep.position.set(s*.17,.64,.44);ep.add(new T.Mesh(new T.SphereGeometry(.055,10,8),pm));headB.add(ew,ep);gEyes.push({ew,ep})}
-  emitter=new T.Object3D();emitter.position.set(.042,.135,-.434);hipsB.add(emitter);   // источник пука — на крупе, едет вместе с анимацией
-  root.position.set(0,-.55,-.45);pivot.add(root);root.updateMatrixWorld(true);
-  mixer=new T.AnimationMixer(root);if(gl.animations&&gl.animations.length){
-   const clip=gl.animations[0];
-   hippoAction=mixer.clipAction(clip,root);hippoAction.reset();hippoAction.setLoop(T.LoopRepeat,Infinity);hippoAction.enabled=true;hippoAction.paused=true;hippoAction.timeScale=1;hippoAction.play();
-   mixer.update(0.001);
-  }
-  body.visible=false;ld.textContent='Бегемот загружен · анимация: '+(gl.animations?.length||0)+' · '+(gl.animations?.[0]?.duration||0).toFixed(1)+' сек';},
- undefined,()=>{ld.textContent='Не удалось загрузить BegemotAnim.glb (положите рядом с index.html, запуск через http-сервер) — запасная модель'})})();
+  try{
+   const root=gl.scene;
+   // Оставляем оригинальные имена Mixamo: GLTFLoader уже создаёт корректные треки для них.
+   const bone=n=>root.getObjectByName('mixamorig:'+n)||root.getObjectByName('mixamorig'+n)||root.getObjectByName('mixamorig_'+n);
+   const sm=(v,a,b)=>{const t=Math.min(1,Math.max(0,(v-a)/(b-a)));return t*t*(3-2*t)};
+   const cB=new T.Color(0x45aab8),cC=new T.Color(0xf3e8cc),cL=new T.Color(0x7cd0d4);
+   root.traverse(o=>{if(!o.isMesh)return;const g=o.geometry,p=g.attributes.position,col=new Float32Array(p.count*3),c=new T.Color();
+    for(let i=0;i<p.count;i++){const x=p.getX(i),y=p.getY(i),z=p.getZ(i);
+     const belly=sm(z,.02,.2)*sm(y,.5,.7)*(1-sm(y,1.35,1.55))*(1-sm(Math.abs(x),.35,.5)),snout=sm(y,1.6,1.7)*sm(z,.3,.45);
+     c.copy(cB).lerp(cL,snout*.8).lerp(cC,belly);col[i*3]=c.r;col[i*3+1]=c.g;col[i*3+2]=c.b}
+    g.setAttribute('color',new T.BufferAttribute(col,3));
+    o.material=new T.MeshStandardMaterial({vertexColors:true,roughness:.6,metalness:0});o.castShadow=true;o.frustumCulled=false});
+   root.position.set(0,-.55,-.45);pivot.add(root);root.updateMatrixWorld(true);
+   headB=bone('Head');hipsB=bone('Hips');
+   const em=new T.MeshStandardMaterial({color:0xffffff,roughness:.3}),pm=new T.MeshStandardMaterial({color:0x23303a,roughness:.3});
+   const eyeParent=headB||root;
+   for(const side of[-1,1]){const ew=new T.Group();ew.position.set(side*.17,.63,.36);ew.add(new T.Mesh(new T.SphereGeometry(.1,14,10),em));
+    const ep=new T.Group();ep.position.set(side*.17,.64,.44);ep.add(new T.Mesh(new T.SphereGeometry(.055,10,8),pm));eyeParent.add(ew,ep);gEyes.push({ew,ep})}
+   emitter=new T.Object3D();emitter.position.set(.042,.135,-.434);(hipsB||root).add(emitter);
+   // Создаём микшер после помещения модели в сцену, сохраняя исходные имена костей и клипа.
+   mixer=new T.AnimationMixer(root);
+   if(gl.animations&&gl.animations.length){hippoAction=mixer.clipAction(gl.animations[0]);hippoAction.reset();hippoAction.setLoop(T.LoopRepeat,Infinity);hippoAction.enabled=true;hippoAction.paused=true;hippoAction.timeScale=1;hippoAction.play();mixer.update(0.001)}
+   body.visible=false;ld.textContent='Бегемот загружен · клипов: '+(gl.animations?.length||0)+' · '+(gl.animations?.[0]?.duration||0).toFixed(1)+' сек';
+  }catch(err){console.error('Hippo setup error:',err);ld.textContent='Ошибка подготовки модели: '+(err?.message||err)+' — включена запасная модель'}
+ },undefined,err=>{console.error('Hippo GLB load error:',err);ld.textContent='Не удалось загрузить BegemotAnim.glb — включена запасная модель'})})(); 
 
 /* ---------- частицы (пул) ---------- */
 const ptx=ctex(64,64,g=>{const gr=g.createRadialGradient(32,32,2,32,32,30);gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(0,0,64,64)});
